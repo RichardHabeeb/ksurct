@@ -10,7 +10,12 @@
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
 
+#include <cstdio>
+
 #include "stm32f4xx.h"
+#include "gpio.h"
+#include "differential_paired_stepper_motors.h"
+#include "timer_interrupt_oc.h"
 
 /*---------------------------------------------------------------------------------------
 *                                   LITERAL CONSTANTS
@@ -28,6 +33,14 @@
 *                                      VARIABLES
 *--------------------------------------------------------------------------------------*/
 
+DifferentialPairedStepperMotors motors(true, // Acceleration enabled
+                                       180,  // Turn speed (degrees per second)
+                                       6,    // Wheel diameter (centimeters)
+                                       11,   // Wheel base (centimeters)
+                                       200,  // Full steps per revolution
+                                       16    // Pulses per full steps (for microstepping)
+                                       );
+
 /*---------------------------------------------------------------------------------------
 *                                     PROCEDURES
 *--------------------------------------------------------------------------------------*/
@@ -39,9 +52,27 @@
 *****************************************************************************/
 int main(void)
 {
-  while(1)
-  {
-    
-  }
-  return 0;
+    motors.Initialize();
+
+    while (1);
+
+    // return 0; KLM: Remove warning: statement is unreachable.
+
 } // main()
+
+// Temporary.  Just to get all test stuff out of main.
+void TestMotors(void)
+{
+    while(1)
+    {
+        motors.Turn(TURN_LEFT, 360);
+        /*
+        motors.Drive(10);
+        while(motors.get_current_distance() < (6.f * 3.14159265f * 5))
+        {
+        }
+        motors.Stop();
+        for (int i = 0; i < 10000000; ++i);
+        */
+    }
+}

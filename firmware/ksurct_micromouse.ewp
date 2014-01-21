@@ -143,7 +143,7 @@
         <option>
           <name>GBECoreSlave</name>
           <version>20</version>
-          <state>39</state>
+          <state>40</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -305,7 +305,13 @@
           <state>$PROJ_DIR$\cmsis\Include</state>
           <state>$PROJ_DIR$\stm32f4xx\std_periph_drivers\include</state>
           <state>$PROJ_DIR$\stm32f4xx\include</state>
-          <state>$PROJ_DIR$\source\include</state>
+          <state>$PROJ_DIR$\source\</state>
+          <state>$PROJ_DIR$\source\control\include</state>
+          <state>$PROJ_DIR$\source\maze\include</state>
+          <state>$PROJ_DIR$\source\micromouse\include</state>
+          <state>$PROJ_DIR$\source\motors\include</state>
+          <state>$PROJ_DIR$\source\sensors\include</state>
+          <state>$PROJ_DIR$\source\utility\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1873,7 +1879,73 @@
   <group>
     <name>source</name>
     <group>
-      <name>include</name>
+      <name>control</name>
+      <group>
+        <name>include</name>
+        <file>
+          <name>$PROJ_DIR$\source\control\include\pid.h</name>
+        </file>
+      </group>
+      <file>
+        <name>$PROJ_DIR$\source\control\pid.cpp</name>
+      </file>
+    </group>
+    <group>
+      <name>maze</name>
+      <group>
+        <name>include</name>
+      </group>
+    </group>
+    <group>
+      <name>micromouse</name>
+      <group>
+        <name>include</name>
+      </group>
+    </group>
+    <group>
+      <name>motors</name>
+      <group>
+        <name>include</name>
+        <file>
+          <name>$PROJ_DIR$\source\motors\include\differential_paired_stepper_motors.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\motors\include\stepper_motor.h</name>
+        </file>
+      </group>
+      <file>
+        <name>$PROJ_DIR$\source\motors\differential_paired_stepper_motors.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\motors\stepper_motor.cpp</name>
+      </file>
+    </group>
+    <group>
+      <name>sensors</name>
+      <group>
+        <name>include</name>
+      </group>
+    </group>
+    <group>
+      <name>utility</name>
+      <group>
+        <name>include</name>
+        <file>
+          <name>$PROJ_DIR$\source\utility\include\gpio.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\utility\include\timer_interrupt_oc.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\utility\include\util_math.h</name>
+        </file>
+      </group>
+      <file>
+        <name>$PROJ_DIR$\source\utility\gpio.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\utility\timer_interrupt_oc.cpp</name>
+      </file>
     </group>
     <file>
       <name>$PROJ_DIR$\source\main.cpp</name>
@@ -1899,7 +1971,13 @@
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\misc.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_gpio.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_rcc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_tim.c</name>
       </file>
     </group>
     <file>

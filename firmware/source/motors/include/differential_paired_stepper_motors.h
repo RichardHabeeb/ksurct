@@ -64,24 +64,12 @@ public: // methods
             float new_speed // cm / sec
         );
 
-    // Same as drive but just for right motor. (driver perspective)
-    void DriveRight
-        (
-            float new_speed // cm / sec
-        );
-
-    // Same as drive but just for left motor. (driver perspective)
-    void DriveLeft
-        (
-            float new_speed // cm / sec
-        );
-
     // Turn the robot the correct 'angle' in degrees in the direction specified using a
     // zero point turn approach.
     void Turn
         (
-            motor_dir_t new_dir, // Which direction to turn.
-            float turn_angle     // Degrees
+            motor_direction_t new_direction, // Which direction to turn.
+            float             turn_angle     // Degrees
         );
 
     // Commands both motors to stop and will wait until they are.
@@ -91,8 +79,15 @@ public: // methods
     bool inline Stopped(void);
 
     // Getters
-    float get_current_distance(void);
-    float get_total_distance(void);
+    float get_right_motor_current_distance(void);
+    float get_left_motor_current_distance(void);
+    float get_right_motor_total_distance(void);
+    float get_left_motor_total_distance(void);
+    float get_wheel_base_distance(void) { return wheel_2_wheel_distance; }
+
+    // Setters
+    void set_right_forward_speed_offset(float offset) { this->right_forward_speed_offset = offset; }
+    void set_left_forward_speed_offset(float offset) { this->left_forward_speed_offset = offset; }
 
 private: // methods
 
@@ -119,6 +114,10 @@ private: // fields
 
     // Number of steps need for the wheel to make one full rotation.
     float full_steps_per_revolution;
+
+    // Speed offset (in cm/sec) to apply to each motor when driving forward.
+    float right_forward_speed_offset;
+    float left_forward_speed_offset;
 
     // Number of pulses that make up one full step
     // Ie 2 for half-stepping, 4 for quarter stepping, etc

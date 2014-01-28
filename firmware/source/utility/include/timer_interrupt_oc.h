@@ -27,11 +27,11 @@
 typedef uint8_t oc_channel_t;
 enum
 {
-    OC_CHANNEL_1,
-    OC_CHANNEL_2,
-    OC_CHANNEL_3,
-    OC_CHANNEL_4,
-    NUM_OC_CHANNELS
+    oc_channel_1,
+    oc_channel_2,
+    oc_channel_3,
+    oc_channel_4,
+    number_oc_channels
 };
 
 // Callback interrupt function pointer type.
@@ -82,7 +82,7 @@ public: // methods
 
 public: // fields
 
-    static oc_channel_info_t tim3[NUM_OC_CHANNELS];
+    static oc_channel_info_t tim3[number_oc_channels];
 
 private: // methods
 

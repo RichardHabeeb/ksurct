@@ -25,19 +25,19 @@
 *--------------------------------------------------------------------------------------*/
 
 // Motor direction type.
-typedef int8_t motor_dir_t;
+typedef int8_t motor_direction_t;
 enum
 {
-    DRIVE_BACKWARD,
-    DRIVE_FORWARD
+    drive_backward,
+    drive_forward
 };
 
 // Motor turn direction type.
 typedef int8_t motor_turn_t;
 enum
 {
-    TURN_RIGHT,
-    TURN_LEFT
+    turn_right,
+    turn_left
 };
 
 // Acceleration function pointer type
@@ -70,8 +70,8 @@ public: // methods
     // Provided speed should always be positive.
     void Drive
         (
-            motor_dir_t new_dir, // Either forwards or backwards.
-            uint32_t new_speed   // Full steps per second (should always be positive)
+            motor_direction_t new_direction, // Either forwards or backwards.
+            uint32_t          new_speed      // Full steps per second (should always be positive)
         );
 
     // Takes one step (or microstep). Always updates current steps and if configured will
@@ -93,7 +93,7 @@ public: // methods
     // Sets direction to either forward or backwards without changing motor speed.
     inline void SetDirection
         (
-            motor_dir_t new_dir
+            motor_direction_t new_direction
         );
 
     // Getters

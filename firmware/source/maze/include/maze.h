@@ -18,8 +18,6 @@
 /*---------------------------------------------------------------------------------------
 *                                      CONSTANTS
 *--------------------------------------------------------------------------------------*/
-#define MAZE_NUM_ROWS	16
-#define MAZE_NUM_COLS	16
 
 /*---------------------------------------------------------------------------------------
 *                                        TYPES
@@ -32,94 +30,109 @@
 /******************************************************************************
 * Class: Maze
 *
-* Description:	This class represents a maze. It is built up of a 4-way linked
-*				list of cells (forming a "grid" in the heap). This structure
-*				is held by a 2d array (for fast indexing of cells).
+* Description:   This class represents a maze. It is built up of a 4-way linked
+*                list of cells (forming a "grid" in the heap). This structure
+*                is held by a 2d array (for fast indexing of cells).
 ******************************************************************************/
 class Maze
 {
 public: // methods
-	Maze(void);
-	~Maze(void);
 
-	Cell* get_starting_cell(void) const
-	{
-		return starting_cell;
-	}
+    // Constructor
+    Maze
+        (
+            uint32_t number_rows,    // Number of rows of maze. Must be at least one.
+            uint32_t number_columns, // Number of columns of maze. Must be at least one.
+            float    cell_length     // Side length of square cell in centimeters.
+        );
 
-	void set_starting_cell
-	(
-		uint32_t r,
-		uint32_t c
-	)
-	{
-		starting_cell = cell_index[r][c];
-	}
+    // Destructor
+    ~Maze(void);
+
+    // Determine if a cell coords are within the bounds of the maze
+    bool IsValidCell
+        (
+            uint32_t        r,
+            uint32_t        c
+        );
+
+    // Returns true if a cell is the goal cell (via reference comparison)
+    bool IsGoalCell
+        (
+            Cell*
+        );
+
+    // Returns true if a cell is the goal cell (via reference comparison)
+    bool IsGoalCell
+        (
+            uint32_t r,
+            uint32_t c
+        );
+
+    // Pass in a static function pointer to exceute the function on each cell of the maze.
+    void Map
+        (
+            void (*func)(Cell*)
+        );
+
+    // Once the maze has been solved we need to go back to the start cell.
+    void SwapStartingAndGoal(void);
+
+    // swap the row and column of every cell in the maze.
+    void Transpose(void);
+
+    void set_starting_cell
+        (
+            uint32_t r, // Row of starting cell
+            uint32_t c  // Column of starting cell
+        )
+    {
+        starting_cell = cell_index[r][c];
+    }
+
+    void set_goal_cell
+        (
+            uint32_t r, // Row of goal cell
+            uint32_t c  // Column of goal cell
+        )
+    {
+        goal_cell = cell_index[r][c];
+    }
 
 
-	Cell* get_goal_cell(void) const
-	{
-		return goal_cell;
-	}
+    Cell* get_cell
+        (
+            uint32_t r,
+            uint32_t c
+        );
 
-	void set_goal_cell
-	(
-		uint32_t r,
-		uint32_t c
-	)
-	{
-		goal_cell = cell_index[r][c];
-	}
+    Cell* get_starting_cell(void) const { return starting_cell; }
 
+    Cell* get_goal_cell(void) const { return goal_cell; }
 
-	Cell* get_cell
-	(
-		uint32_t r,
-		uint32_t c
-	);
+    // Returns side length of cell (assuming square cell) in centimeters.
+    float get_cell_length(void) const { return this->cell_length; }
 
-	// Determine if a cell coords are within the bounds of the maze
-	bool IsValidCell
-	(
-		uint32_t		r,
-		uint32_t		c
-	);
-
-	// Determine if a cell is the goal cell (via referenec comparison)
-	bool IsGoalCell
-	(
-		Cell*
-	);
-
-	// Determine if a cell is the goal cell (via referenec comparison)
-	bool IsGoalCell
-	(
-		uint32_t r,
-		uint32_t c
-	);
-
-	// Pass in a static function pointer to exceute the function on each cell of the maze
-	void Map
-	(
-		void (*func)(Cell*)
-	);
-
-	// Once the maze has been solved we need to go back to the start cell.
-	void SwapStartingAndGoal(void);
-
-	// swap the row and column of every cell in the maze.
-	void Transpose(void);
+    // Returns maze dimensions.
+    uint32_t get_number_rows(void) const { return this->number_rows; }
+    uint32_t get_number_columns(void) const { return this->number_rows; }
 
 public: //fields
 
 private: //methods
 
 private:
-	Cell*	starting_cell;
-	Cell*	goal_cell;
-	Cell*** cell_index;
+
+    Cell*    starting_cell;
+    Cell*    goal_cell;
+    Cell***  cell_index;
+
+    // Number of rows and columns of maze. Each dimension is at least one.
+    uint32_t number_rows;
+    uint32_t number_columns;
+
+    float cell_length; // In centimeters.
 
 };
-
 
 #endif //MAZE_INCLUDED_H

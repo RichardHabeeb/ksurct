@@ -1,25 +1,23 @@
 /****************************************************************************************
-* File: simplefloodfill.h
+* File: ipathfinder.h
 *
-* Description: TODO
+* Description: Interface definition for pathfindign algos
 *
 * Created: 2/20/2014, by Richard Habeeb
 ****************************************************************************************/
 
-#ifndef SIMPLEFLOODFILL_INCLUDED_H
-#define SIMPLEFLOODFILL_INCLUDED_H
+#ifndef IPATHFINDING_INCLUDED_H
+#define IPATHFINDING_INCLUDED_H
 
 /*---------------------------------------------------------------------------------------
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
-#include "ipathfinder.h"
 #include "maze.h"
 
 /*---------------------------------------------------------------------------------------
 *                                      CONSTANTS
 *--------------------------------------------------------------------------------------*/
-#define INITIAL_VALUE 0
-#define MAX_FLOOD_DEPTH 256
+
 
 /*---------------------------------------------------------------------------------------
 *                                        TYPES
@@ -30,60 +28,29 @@
 *--------------------------------------------------------------------------------------*/
 
 /******************************************************************************
-* Class: SimpleFloodFill
+* Class: IPathFinder
 *
-* Description:
+* Description:	An interface for pathfinding algorithms
 ******************************************************************************/
-class SimpleFloodFill : public IPathFinder
+class IPathFinder
 {
-public: //methods
+public:
 
-	SimpleFloodFill
-        (
-            Maze* m
-        );
+	virtual ~IPathFinder(void) {};
 
-	~SimpleFloodFill(void);
-
-	// Compute the fastest route throught the maze
-	void FindNextPathSegment
+	// Compute the fastest route throught the maze.
+	virtual void FindNextPathSegment
 	(
 		uint32_t		robot_current_row, // the current row of the robot
 		uint32_t		robot_current_col,  // the current col of the robot
 		heading_t		robot_current_heading, // the current heading of the robot
 		heading_t*		next_heading, //out param of the next heading to travel
 		uint32_t*		cells_to_travel // out param of the number of cells to travel in the given direction
-	);
+	) = 0;
 
-	char* ToString
-		(void);
-
-public: // fields
-
-
-private: // methods
-
-	// Run a classic flooding algorithm to fill in the maze
-	uint32_t FloodFill(void);
-
-	// create an instance of the cell data in each cell
-	static void InitializeCellData
-	(
-		Cell*
-	);
-
-	// reset the value within the cell data
-	static void ResetCellData
-	(
-		Cell*
-	);
-
-
-private: // fields
-	uint32_t			max_flood_depth;
-	Maze*				m;
-
+	// For debugging. Print the maze walls with cell data, will allocate memory on the heap
+	virtual char* ToString(void) = 0;
 
 };
 
-#endif // SIMPLEFLOODFILL_INCLUDED_H
+#endif // IPATHFINDING_INCLUDED_H

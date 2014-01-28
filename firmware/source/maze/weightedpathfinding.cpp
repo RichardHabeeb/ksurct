@@ -1,7 +1,7 @@
 /****************************************************************************************
-* File: Maze.cpp
+* File: weightedpathfinding.cpp
 *
-* Description: Implementation of the maze class methods
+* Description: TODO
 *
 * Created: 2/20/2014, by Richard Habeeb
 ****************************************************************************************/
@@ -9,11 +9,19 @@
 /*---------------------------------------------------------------------------------------
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
+
 #include "weightedpathfinding.h"
 
 /*---------------------------------------------------------------------------------------
 *                                   LITERAL CONSTANTS
 *--------------------------------------------------------------------------------------*/
+
+// Algorithm Constants
+// (used for speedup estimates)
+#define			STEP_WEIGHT			2
+#define			VISITED_STEP_WEIGHT	1
+#define			TURN_WEIGHT			4
+#define			INITIAL_WEIGHT		-1
 
 /*---------------------------------------------------------------------------------------
 *                                        TYPES
@@ -42,26 +50,15 @@ WeightedPathfinding::WeightedPathfinding
 	)
 {
 	m->Map(WeightedPathfinding::InitializeCellData);
-	maze_max_dim = Maximum(MAZE_NUM_ROWS, MAZE_NUM_COLS);
+	maze_max_dim = Maximum(m->get_number_rows(), m->get_number_columns());
 	this->m = m;
+
 } // WeightedPathfinding()
-
-
-/*****************************************************************************
-* Function: WeightedPathfinding - Destructor
-*
-* Description: 
-*****************************************************************************/
-WeightedPathfinding::~WeightedPathfinding
-	()
-{
-}
-
 
 /*****************************************************************************
 * Function: FindNextPathSegment
 *
-* Description:	Compute the fastest route throught the maze. Simulate maze 
+* Description:	Compute the fastest route throught the maze. Simulate maze
 *				solutions and ouput the next heading and the number of cells
 *				to travel forward to get to that turn.
 *****************************************************************************/
@@ -69,8 +66,8 @@ void WeightedPathfinding::FindNextPathSegment
 	(
 		uint32_t		robot_current_row, // the current row of the robot
 		uint32_t		robot_current_col,  // the current col of the robot
-		heading_t			robot_current_heading, // the current heading of the robot
-		heading_t*			next_heading, //out param of the next heading to travel
+		heading_t		robot_current_heading, // the current heading of the robot
+		heading_t*		next_heading, //out param of the next heading to travel
 		uint32_t*		cells_to_travel // out param of the number of cells to travel in the given direction
 	)
 {
@@ -87,8 +84,8 @@ void WeightedPathfinding::FindNextPathSegment
 	{
 		Cell*				current_cell			= cell_q.Dequeue();
 		cell_data_t*		current_cell_data		= (cell_data_t*)current_cell->get_data();
-		
-		for (heading_t h = north; h < NUM_HEADINGS; h++)
+
+		for (heading_t h = north; h < num_cardinal_directions; h++)
 		{
 			Cell*			adjacent_cell			= current_cell->get_adjacent_cell(h);
 			if (adjacent_cell != _NULL)
@@ -126,25 +123,23 @@ void WeightedPathfinding::FindNextPathSegment
 
 } // FindNextPathSegment()
 
-
 /*****************************************************************************
 * Function: ToString
 *
-* Description:	For debugging. Print the maze walls with cell data, will 
+* Description:	For debugging. Print the maze walls with cell data, will
 *				allocate memory on the heap
 *****************************************************************************/
-char* WeightedPathfinding::ToString
-	(void)
+char* WeightedPathfinding::ToString(void)
 {
-	char* s = new char[MAZE_NUM_ROWS*(MAZE_NUM_COLS*(NUM_HEADINGS + 4) + 1)];
+	char* s = new char[m->get_number_rows()*(m->get_number_columns()*(num_cardinal_directions + 4) + 1)];
 	int32_t write_index = 0;
 	char heading_names[] = "NESW";
 
-	for (uint32_t r = 0; r < MAZE_NUM_ROWS; r++)
+	for (uint32_t r = 0; r < m->get_number_rows(); r++)
 	{
-		for (uint32_t c = 0; c < MAZE_NUM_COLS; c++)
+		for (uint32_t c = 0; c < m->get_number_columns(); c++)
 		{
-			for (heading_t h = north; h < NUM_HEADINGS; h++)
+			for (heading_t h = north; h < num_cardinal_directions; h++)
 			{
 				s[write_index++] = (m->get_cell(r,c)->IsWall(h)) ? heading_names[h] : ' ';
 			}
@@ -163,7 +158,7 @@ char* WeightedPathfinding::ToString
 /*****************************************************************************
 * Function: InitializeCellData
 *
-* Description:	allocate and assign cell data structs into all the cells 
+* Description:	allocate and assign cell data structs into all the cells
 *				of the maze
 *****************************************************************************/
 void WeightedPathfinding::InitializeCellData
@@ -186,7 +181,7 @@ void WeightedPathfinding::InitializeCellData
 *****************************************************************************/
 void WeightedPathfinding::ResetCellData
 	(
-	Cell* c
+        Cell* c
 	)
 {
 	cell_data_t* d			= (cell_data_t*) c->get_data();

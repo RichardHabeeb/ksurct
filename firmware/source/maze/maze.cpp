@@ -36,14 +36,22 @@
 *
 * Description: Initializes fields for new instance of Maze object.
 *****************************************************************************/
-Maze::Maze(void)
+Maze::Maze
+    (
+        uint32_t number_rows,    // Number of rows of maze. Must be at least one.
+        uint32_t number_columns, // Number of columns of maze. Must be at least one.
+        float    cell_length     // Side length of square cell in centimeters.
+    )
 {
-	cell_index = new Cell**[MAZE_NUM_ROWS];
+    this->number_rows    = number_rows;
+    this->number_columns = number_columns;
 
-	for (uint32_t r = 0; r < MAZE_NUM_ROWS; r++)
+	cell_index = new Cell**[number_rows];
+
+	for (uint32_t r = 0; r < number_rows; r++)
 	{
-		cell_index[r] = new Cell*[MAZE_NUM_COLS];
-		for (uint32_t c = 0; c < MAZE_NUM_COLS; c++)
+		cell_index[r] = new Cell*[number_columns];
+		for (uint32_t c = 0; c < number_columns; c++)
 		{
 			cell_index[r][c] = new Cell();
 			cell_index[r][c]->set_visited(false);
@@ -53,7 +61,7 @@ Maze::Maze(void)
 				cell_index[r][c]->set_adjacent_cell(west, cell_index[r][c - 1]);
 			}
 
-			if (r > 0) 
+			if (r > 0)
 			{
 				cell_index[r][c]->set_adjacent_cell(north, cell_index[r - 1][c]);
 			}
@@ -74,7 +82,7 @@ Maze::~Maze(void)
 /*****************************************************************************
 * Function: get_cell
 *
-* Description: 
+* Description:
 *****************************************************************************/
 Cell* Maze::get_cell
 	(
@@ -126,7 +134,7 @@ bool Maze::IsValidCell
 		uint32_t		c
 	)
 {
-	return (r < MAZE_NUM_ROWS && c < MAZE_NUM_COLS );
+	return (r < number_rows && c < number_columns );
 }// IsValidCell()
 
 /*****************************************************************************
@@ -142,7 +150,7 @@ void Maze::SwapStartingAndGoal(void)
 } // SwapStartingAndGoal()
 
 /*****************************************************************************
-* Function: SwapStartingAndGoal
+* Function: Map
 *
 * Description:
 *****************************************************************************/
@@ -151,11 +159,22 @@ void Maze::Map
 		void (*func)(Cell*)
 	)
 {
-	for (uint32_t r = 0; r < MAZE_NUM_ROWS; r++)
+	for (uint32_t r = 0; r < number_rows; r++)
 	{
-		for (uint32_t c = 0; c < MAZE_NUM_COLS; c++)
+		for (uint32_t c = 0; c < number_columns; c++)
 		{
 			(*func)(cell_index[r][c]);
 		}
 	}
 } // Map()
+
+/*****************************************************************************
+* Function: Transpose
+*
+* Description:
+*****************************************************************************/
+void Maze::Transpose(void)
+{
+    // TODO
+
+} // Transpose()

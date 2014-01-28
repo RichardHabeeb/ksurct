@@ -93,11 +93,11 @@ void StepperMotor::ReInitialize(void)
 ******************************************************************************/
 void StepperMotor::Drive
     (
-        motor_dir_t new_dir, // Either forwards or backwards.
-        uint32_t new_speed   // Full steps per second (should always be positive)
+        motor_direction_t new_direction, // Either forwards or backwards.
+        uint32_t          new_speed      // Full steps per second (should always be positive)
     )
 {
-    SetDirection(new_dir);
+    SetDirection(new_direction);
     SetTargetSpeed(new_speed);
 
 } // Drive()
@@ -191,10 +191,10 @@ uint32_t StepperMotor::UpdateSpeed(void)
 ******************************************************************************/
 inline void StepperMotor::SetDirection
     (
-        motor_dir_t new_dir
+        motor_direction_t new_direction
     )
 {
-    if (new_dir == DRIVE_FORWARD)
+    if (new_direction == drive_forward)
     {
         direction_pin.WriteLow();
     }

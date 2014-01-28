@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.70.2.6303</state>
+          <state>6.70.1.5793</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1898,7 +1898,7 @@
           <name>$PROJ_DIR$\source\maze\include\cell.h</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\source\maze\include\ipathfinding.h</name>
+          <name>$PROJ_DIR$\source\maze\include\ipathfinder.h</name>
         </file>
         <file>
           <name>$PROJ_DIR$\source\maze\include\maze.h</name>
@@ -1927,7 +1927,13 @@
       <name>micromouse</name>
       <group>
         <name>include</name>
+        <file>
+          <name>$PROJ_DIR$\source\micromouse\include\micromouse.h</name>
+        </file>
       </group>
+      <file>
+        <name>$PROJ_DIR$\source\micromouse\micromouse.cpp</name>
+      </file>
     </group>
     <group>
       <name>motors</name>
@@ -1958,13 +1964,16 @@
       <group>
         <name>include</name>
         <file>
+          <name>$PROJ_DIR$\source\utility\include\frame_of_references.h</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\source\utility\include\gpio.h</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\source\utility\include\system_timer.h</name>
+          <name>$PROJ_DIR$\source\utility\include\queue.h</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\source\utility\include\queue.h</name>
+          <name>$PROJ_DIR$\source\utility\include\system_timer.h</name>
         </file>
         <file>
           <name>$PROJ_DIR$\source\utility\include\timer_interrupt_oc.h</name>
@@ -1973,6 +1982,9 @@
           <name>$PROJ_DIR$\source\utility\include\util_math.h</name>
         </file>
       </group>
+      <file>
+        <name>$PROJ_DIR$\source\utility\frame_of_references.cpp</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\source\utility\gpio.cpp</name>
       </file>

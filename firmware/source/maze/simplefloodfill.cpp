@@ -85,9 +85,9 @@ void SimpleFloodFill::FindNextPathSegment
 
 	do
 	{
-		for (unsigned char i = 0; i < NUM_HEADINGS; i++)
+		for (unsigned char i = 0; i < num_cardinal_directions; i++)
 		{
-			heading_t h			= (robot_current_heading + i) % NUM_HEADINGS;
+			heading_t h			= (robot_current_heading + i) % num_cardinal_directions;
 			Cell* adjacent_cell		= start_cell->get_adjacent_cell(h);
 
 			if (adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == depth - 1)
@@ -121,14 +121,14 @@ uint32_t SimpleFloodFill::FloodFill(void)
 
 	while (++depth < max_flood_depth)
 	{
-		for (uint32_t r = 0; r < MAZE_NUM_ROWS ; r++)
+		for (uint32_t r = 0; r < m->get_number_rows() ; r++)
 		{
-			for (uint32_t c = 0; c < MAZE_NUM_COLS; c++)
+			for (uint32_t c = 0; c < m->get_number_columns(); c++)
 			{
 				Cell* search_cell = m->get_cell(r, c);
 				if (*((int32_t*)search_cell->get_data()) == 0)
 				{
-					for (heading_t h = north; h < NUM_HEADINGS; h++)
+					for (heading_t h = north; h < num_cardinal_directions; h++)
 					{
 						Cell* adjacent_cell = search_cell->get_adjacent_cell(h);
 
@@ -142,7 +142,7 @@ uint32_t SimpleFloodFill::FloodFill(void)
 				}
 			}
 		}
-	} 
+	}
 
 	return max_flood_depth;
 } // FloodFill()
@@ -156,15 +156,15 @@ uint32_t SimpleFloodFill::FloodFill(void)
 *****************************************************************************/
 char* SimpleFloodFill::ToString(void)
 {
-	char* s = new char[MAZE_NUM_ROWS*(MAZE_NUM_COLS*(NUM_HEADINGS + 4) + 1)];
+	char* s = new char[m->get_number_rows()*(m->get_number_columns()*(num_cardinal_directions + 4) + 1)];
 	int32_t write_index = 0;
 	char heading_names[] = "NESW";
 
-	for (uint32_t r = 0; r < MAZE_NUM_ROWS; r++)
+	for (uint32_t r = 0; r < m->get_number_rows(); r++)
 	{
-		for (uint32_t c = 0; c < MAZE_NUM_COLS; c++)
+		for (uint32_t c = 0; c < m->get_number_columns(); c++)
 		{
-			for (heading_t h = north; h < NUM_HEADINGS; h++)
+			for (heading_t h = north; h < num_cardinal_directions; h++)
 			{
 				s[write_index++] = (m->get_cell(r, c)->IsWall(h)) ? heading_names[h] : ' ';
 			}

@@ -32,7 +32,7 @@
 *                                    STATIC FIELDS
 *--------------------------------------------------------------------------------------*/
 
-oc_channel_info_t TimerInterruptOC::tim3[NUM_OC_CHANNELS];
+oc_channel_info_t TimerInterruptOC::tim3[number_oc_channels];
 
 /*---------------------------------------------------------------------------------------
 *                                    CLASS METHODS
@@ -99,19 +99,19 @@ void TimerInterruptOC::InitChannel
     // Setup specific channel settings.
     switch (channel)
     {
-        case OC_CHANNEL_1:
+        case oc_channel_1:
             TIM_OC1Init(this->timer, &TIM_OCInitStructure);
             TIM_OC1PreloadConfig(this->timer, TIM_OCPreload_Disable);
             break;
-        case OC_CHANNEL_2:
+        case oc_channel_2:
             TIM_OC2Init(this->timer, &TIM_OCInitStructure);
             TIM_OC2PreloadConfig(this->timer, TIM_OCPreload_Disable);
             break;
-        case OC_CHANNEL_3:
+        case oc_channel_3:
             TIM_OC3Init(this->timer, &TIM_OCInitStructure);
             TIM_OC3PreloadConfig(this->timer, TIM_OCPreload_Disable);
             break;
-        case OC_CHANNEL_4:
+        case oc_channel_4:
             TIM_OC4Init(this->timer, &TIM_OCInitStructure);
             TIM_OC4PreloadConfig(this->timer, TIM_OCPreload_Disable);
             break;
@@ -152,16 +152,16 @@ void TimerInterruptOC::SetChannelFrequency
 
     switch (channel)
     {
-        case OC_CHANNEL_1:
+        case oc_channel_1:
             timer->CCR1 = timer->CNT + capture_compare_value;
             break;
-        case OC_CHANNEL_2:
+        case oc_channel_2:
             timer->CCR2 = timer->CNT + capture_compare_value;
             break;
-        case OC_CHANNEL_3:
+        case oc_channel_3:
             timer->CCR3 = timer->CNT + capture_compare_value;
             break;
-        case OC_CHANNEL_4:
+        case oc_channel_4:
             timer->CCR4 = timer->CNT + capture_compare_value;
             break;
     }
@@ -224,16 +224,16 @@ void TimerInterruptOC::SetChannelState
 {
     switch (channel)
     {
-        case OC_CHANNEL_1:
+        case oc_channel_1:
             TIM_ITConfig(this->timer, TIM_IT_CC1, state);
             break;
-        case OC_CHANNEL_2:
+        case oc_channel_2:
             TIM_ITConfig(this->timer, TIM_IT_CC2, state);
             break;
-        case OC_CHANNEL_3:
+        case oc_channel_3:
             TIM_ITConfig(this->timer, TIM_IT_CC3, state);
             break;
-        case OC_CHANNEL_4:
+        case oc_channel_4:
             TIM_ITConfig(this->timer, TIM_IT_CC4, state);
             break;
     }
@@ -253,7 +253,7 @@ extern "C" void TIM3_IRQHandler(void)
 
     if (TIM_GetITStatus(TIM3, TIM_IT_CC1) != RESET)
     {
-        channel = &TimerInterruptOC::tim3[OC_CHANNEL_1];
+        channel = &TimerInterruptOC::tim3[oc_channel_1];
         TIM3->SR = (uint16_t)~TIM_IT_CC1; // Clear the interrupt pending bit
         capture = TIM3->CCR1; // Get the capture 1 register value
         TIM3->CCR1 = capture + channel->capture_compare_value; // Set the capture compare 1 register value
@@ -262,7 +262,7 @@ extern "C" void TIM3_IRQHandler(void)
 
     if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET)
     {
-        channel = &TimerInterruptOC::tim3[OC_CHANNEL_2];
+        channel = &TimerInterruptOC::tim3[oc_channel_2];
         TIM3->SR = (uint16_t)~TIM_IT_CC2; // Clear the interrupt pending bit
         capture = TIM3->CCR2; // Get the capture 2 register value
         TIM3->CCR2 = capture + channel->capture_compare_value; // Set the capture compare 2 register value
@@ -271,7 +271,7 @@ extern "C" void TIM3_IRQHandler(void)
 
     if (TIM_GetITStatus(TIM3, TIM_IT_CC3) != RESET)
     {
-        channel = &TimerInterruptOC::tim3[OC_CHANNEL_3];
+        channel = &TimerInterruptOC::tim3[oc_channel_3];
         TIM3->SR = (uint16_t)~TIM_IT_CC3; // Clear the interrupt pending bit
         capture = TIM3->CCR3; // Get the capture 3 register value
         TIM3->CCR3 = capture + channel->capture_compare_value; // Set the capture compare 3 register value
@@ -280,7 +280,7 @@ extern "C" void TIM3_IRQHandler(void)
 
     if (TIM_GetITStatus(TIM3, TIM_IT_CC4) != RESET)
     {
-        channel = &TimerInterruptOC::tim3[OC_CHANNEL_4];
+        channel = &TimerInterruptOC::tim3[oc_channel_4];
         TIM3->SR = (uint16_t)~TIM_IT_CC4; // Clear the interrupt pending bit
         capture = TIM3->CCR4; // Get the capture 4 register value
         TIM3->CCR4 = capture + channel->capture_compare_value; // Set the capture compare 4 register value

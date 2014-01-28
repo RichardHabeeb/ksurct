@@ -1,7 +1,7 @@
 /****************************************************************************************
 * File: ipathfinding.h
 *
-* Description: Interface definition for pathfindign algos
+* Description: Interface definition for path finding algos
 *
 * Created: 2/20/2014, by Richard Habeeb
 ****************************************************************************************/
@@ -28,15 +28,15 @@
 *--------------------------------------------------------------------------------------*/
 
 /******************************************************************************
-* Class: IPathFinding
+* Class: IPathFinder
 *
 * Description:	An interface for creating pathfinding algorithms
 ******************************************************************************/
-class IPathFinding
+class IPathFinder
 {
 public:
 
-	virtual ~IPathFinding(void) {};
+	virtual ~IPathFinder(void) {};
 
 	// Compute the fastest route throught the maze
 	virtual void FindNextPathSegment

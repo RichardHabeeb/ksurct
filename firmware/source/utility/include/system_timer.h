@@ -64,4 +64,6 @@ private: // fields
 
 }; // SystemTimer
 
+extern SystemTimer system_timer; // Must be define by client at whatever frequency they need.
+
 #endif  // SYSTEM_TIMER_INCLUDED_H

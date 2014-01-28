@@ -23,6 +23,8 @@
 
 const float PI = 3.14159265f;
 
+const float degrees_per_radian = 180.f / PI;
+
 /*-----------------------------------------------------------------------------
 *                                 PROCEDURES
 *----------------------------------------------------------------------------*/
@@ -47,7 +49,7 @@ T AbsoluteValue
 } // AbsoluteValue()
 
 /*******************************************************************
-* Template: max
+* Template: Maximum
 *
 * Description: Returns maximum of two input parameters.
 *******************************************************************/
@@ -60,10 +62,10 @@ inline T Maximum
 {
     return (a > b ? a : b);
 
-} // max()
+} // Maximum()
 
 /*******************************************************************
-* Template: min
+* Template: Minimum
 *
 * Description: Returns minimum of two input parameters.
 *******************************************************************/
@@ -76,10 +78,10 @@ inline T Minimum
 {
     return (a < b ? a : b);
 
-} // min()
+} // Minimum()
 
 /*******************************************************************
-* Template: cap_bounds
+* Template: CapBounds
 *
 * Description: Returns value but limited between high and low bounds.
 *******************************************************************/
@@ -102,7 +104,7 @@ inline T CapBounds
 
     return value;
 
-} // cap_bounds()
+} // CapBounds()
 
 /*******************************************************************
 * Template: Mod
@@ -120,7 +122,25 @@ inline T Mod
 	m       = (m < 0) ? -m : m;
 	int r	= x % m;
 	return (r < 0) ? r + m : r;
-}
 
+} // Mod()
+
+/*******************************************************************
+* Template: Swap
+*
+* Description: Swaps values stored in first and second parameter.
+*******************************************************************/
+template <typename T>
+inline void Swap
+	(
+		T & first,  // Value to swap with second.
+		T & second  // Value to swap with first.
+	)
+{
+    T temp = first;
+    first = second;
+    second = temp;
+
+} // Swap()
 
 #endif // UTIL_MATH_H

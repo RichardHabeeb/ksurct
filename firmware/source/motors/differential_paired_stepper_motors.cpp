@@ -93,6 +93,9 @@ DifferentialPairedStepperMotors::DifferentialPairedStepperMotors
     this->wheel_2_wheel_distance = wheel_2_wheel_distance; // centimeters
     this->pulses_per_step = pulses_per_step;
 
+    this->right_forward_speed_offset = 0.f;
+    this->left_forward_speed_offset  = 0.f;
+
     // Like circumference of robot. But diamter is between two wheels instead of outside.
     this->wheel_2_wheel_circumference = wheel_2_wheel_distance * PI; // centimeters
 
@@ -172,13 +175,13 @@ void DifferentialPairedStepperMotors::Initialize(void)
     left_motor_ms3_pin.Init(HIGH);
 
     // Setup timer interrupts that will step it's motor each interrupt
-    timer.InitChannel(OC_CHANNEL_1, 0, RightMotorStepper);
-    timer.InitChannel(OC_CHANNEL_2, 0, LeftMotorStepper);
+    timer.InitChannel(oc_channel_1, 0, RightMotorStepper);
+    timer.InitChannel(oc_channel_2, 0, LeftMotorStepper);
 
     // Setup timer interrupts that are responsible for changing the frequency
     // of the above stepping timer interrupts.
-    timer.InitChannel(OC_CHANNEL_3, 0, RightMotorAccelerator);
-    timer.InitChannel(OC_CHANNEL_4, 0, LeftMotorAccelerator);
+    timer.InitChannel(oc_channel_3, 0, RightMotorAccelerator);
+    timer.InitChannel(oc_channel_4, 0, LeftMotorAccelerator);
 
 } // DifferentialPairedStepperMotors::Initialize()
 
@@ -209,44 +212,19 @@ void DifferentialPairedStepperMotors::Drive
         float new_speed // cm / sec
     )
 {
-    uint32_t new_speed_full_steps_per_sec = (uint32_t)(AbsoluteValue(new_speed) * full_steps_per_cm);
-    motor_dir_t new_dir = (new_speed >= 0.f ? DRIVE_FORWARD : DRIVE_BACKWARD);
-    right_motor->Drive(new_dir, new_speed_full_steps_per_sec);
-    left_motor->Drive(new_dir, new_speed_full_steps_per_sec);
+    float new_right_speed = new_speed + right_forward_speed_offset;
+    float new_left_speed  = new_speed - left_forward_speed_offset;
+
+    uint32_t new_right_speed_full_steps_per_sec = (uint32_t)(AbsoluteValue(new_right_speed) * full_steps_per_cm);
+    uint32_t new_left_speed_full_steps_per_sec  = (uint32_t)(AbsoluteValue(new_left_speed)  * full_steps_per_cm);
+
+    motor_direction_t new_right_direction = (new_right_speed >= 0.f ? drive_forward : drive_backward);
+    motor_direction_t new_left_direction  = (new_left_speed  >= 0.f ? drive_forward : drive_backward);
+
+    right_motor->Drive(new_right_direction, new_right_speed_full_steps_per_sec);
+    left_motor->Drive(new_left_direction, new_left_speed_full_steps_per_sec);
 
 } // DifferentialPairedStepperMotors::Drive()
-
-/******************************************************************************
-* Name: DriveRight
-*
-* Description: Same as drive but just for right motor. (driver perspective)
-******************************************************************************/
-void DifferentialPairedStepperMotors::DriveRight
-    (
-        float new_speed // cm / sec
-    )
-{
-    uint32_t new_speed_full_steps_per_sec = (uint32_t)(AbsoluteValue(new_speed) * full_steps_per_cm);
-    motor_dir_t new_dir = (new_speed >= 0.f ? DRIVE_FORWARD : DRIVE_BACKWARD);
-    right_motor->Drive(new_dir, new_speed_full_steps_per_sec);
-
-} // DifferentialPairedStepperMotors::DriveRight()
-
-/******************************************************************************
-* Name: DriveLeft
-*
-* Description: Same as drive but just for left motor. (driver perspective)
-******************************************************************************/
-void DifferentialPairedStepperMotors::DriveLeft
-    (
-        float new_speed // cm / sec
-    )
-{
-    uint32_t new_speed_full_steps_per_sec = (uint32_t)(AbsoluteValue(new_speed) * full_steps_per_cm);
-    motor_dir_t new_dir = (new_speed >= 0.f ? DRIVE_FORWARD : DRIVE_BACKWARD);
-    left_motor->Drive(new_dir, new_speed_full_steps_per_sec);
-
-} // DifferentialPairedStepperMotors::DriveRight()
 
 /******************************************************************************
 * Name: Turn
@@ -256,8 +234,8 @@ void DifferentialPairedStepperMotors::DriveLeft
 ******************************************************************************/
 void DifferentialPairedStepperMotors::Turn
     (
-        motor_dir_t new_dir, // Which direction to turn.
-        float turn_angle     // Degrees
+        motor_direction_t new_direction, // Which direction to turn.
+        float             turn_angle     // Degrees
     )
 {
     // make sure both motors are stopped
@@ -270,19 +248,19 @@ void DifferentialPairedStepperMotors::Turn
     // determine number of centimeters to wait until turn will finish
     float distance_to_turn = cm_per_degree_zero_point * turn_angle;
 
-    if (new_dir == TURN_RIGHT)
+    if (new_direction == turn_right)
     {
-        left_motor->Drive(DRIVE_FORWARD, turn_speed_full_steps_per_sec);
-        right_motor->Drive(DRIVE_BACKWARD, turn_speed_full_steps_per_sec);
+        left_motor->Drive(drive_forward, turn_speed_full_steps_per_sec);
+        right_motor->Drive(drive_backward, turn_speed_full_steps_per_sec);
     }
-    else if (new_dir == TURN_LEFT)
+    else if (new_direction == turn_left)
     {
-        right_motor->Drive(DRIVE_FORWARD, turn_speed_full_steps_per_sec);
-        left_motor->Drive(DRIVE_BACKWARD, turn_speed_full_steps_per_sec);
+        right_motor->Drive(drive_forward, turn_speed_full_steps_per_sec);
+        left_motor->Drive(drive_backward, turn_speed_full_steps_per_sec);
     }
 
     // wait for turn to finish
-    while (get_current_distance() < distance_to_turn);
+    while (get_right_motor_current_distance() < distance_to_turn);
 
     Stop();
 
@@ -318,30 +296,48 @@ bool inline DifferentialPairedStepperMotors::Stopped(void)
 } // DifferentialPairedStepperMotors::Stopped()
 
 /******************************************************************************
-* Name: get_current_distance
+* Name: get_right_motor_current_distance
 *
-* Description: Returns the average number of centimeters. since last speed change.
+* Description: Returns the number of centimeters since last speed change.
 ******************************************************************************/
-float DifferentialPairedStepperMotors::get_current_distance(void)
+float DifferentialPairedStepperMotors::get_right_motor_current_distance(void)
 {
-    float right_cm = right_motor->get_current_full_steps() * cm_per_full_step;
-    float left_cm  = left_motor->get_current_full_steps() * cm_per_full_step;
-    return ((right_cm + left_cm) / 2.0f);
+    return right_motor->get_current_full_steps() * cm_per_full_step;
 
-} // DifferentialPairedStepperMotors::get_current_distance()
+} // DifferentialPairedStepperMotors::get_right_motor_current_distance()
 
 /******************************************************************************
-* Name: get_total_distance
+* Name: get_left_motor_current_distance
+*
+* Description: Returns the number of centimeters since last speed change.
+******************************************************************************/
+float DifferentialPairedStepperMotors::get_left_motor_current_distance(void)
+{
+    return left_motor->get_current_full_steps() * cm_per_full_step;
+
+} // DifferentialPairedStepperMotors::get_left_motor_current_distance()
+
+/******************************************************************************
+* Name: get_right_motor_total_distance
 *
 * Description: Returns the number of centimeters since the beginning of time.
 ******************************************************************************/
-float DifferentialPairedStepperMotors::get_total_distance(void)
+float DifferentialPairedStepperMotors::get_right_motor_total_distance(void)
 {
-    float right_cm = right_motor->get_total_full_steps() * cm_per_full_step;
-    float left_cm  = left_motor->get_total_full_steps() * cm_per_full_step;
-    return ((right_cm + left_cm) / 2.0f);
+    return right_motor->get_total_full_steps() * cm_per_full_step;
 
-} // DifferentialPairedStepperMotors::get_total_distance()
+} // DifferentialPairedStepperMotors::get_right_motor_total_distance()
+
+/******************************************************************************
+* Name: get_left_motor_total_distance
+*
+* Description: Returns the number of centimeters since the beginning of time.
+******************************************************************************/
+float DifferentialPairedStepperMotors::get_left_motor_total_distance(void)
+{
+    return left_motor->get_total_full_steps() * cm_per_full_step;
+
+} // DifferentialPairedStepperMotors::get_left_motor_total_distance()
 
 /******************************************************************************
 * Name: SetAccelerationMode
@@ -373,7 +369,7 @@ void SetRightAcceleration
 {
     // Update acceleration timer interrupt so it will interrupt at a frequency
     // equal to input parameter 'acceleration'.
-    timer.SetChannelFrequency(OC_CHANNEL_3, AbsoluteValue(acceleration));
+    timer.SetChannelFrequency(oc_channel_3, AbsoluteValue(acceleration));
 
 } // DifferentialPairedStepperMotors::SetRightAcceleration()
 
@@ -391,7 +387,7 @@ void SetLeftAcceleration
 {
     // Update acceleration timer interrupt so it will interrupt at a frequency
     // equal to input parameter 'acceleration'.
-    timer.SetChannelFrequency(OC_CHANNEL_4, AbsoluteValue(acceleration));
+    timer.SetChannelFrequency(oc_channel_4, AbsoluteValue(acceleration));
 
 } // DifferentialPairedStepperMotors::SetLeftAcceleration()
 
@@ -431,12 +427,12 @@ void RightMotorAccelerator(void)
     if (current_right_freq != new_freq)
     {
         // we have some new frequency we want to step the motors at so update timer interrupt
-        timer.SetChannelFrequency(OC_CHANNEL_1, new_freq);
+        timer.SetChannelFrequency(oc_channel_1, new_freq);
     }
     else
     {
         // We are now stepping at desired frequency so disable THIS interrupt until we need it again.
-        timer.SetChannelFrequency(OC_CHANNEL_3, 0);
+        timer.SetChannelFrequency(oc_channel_3, 0);
     }
 
     current_right_freq = new_freq;
@@ -457,12 +453,12 @@ void LeftMotorAccelerator(void)
     if (current_left_freq != new_freq)
     {
         // we have some new frequency we want to step the motors at so update timer interrupt
-        timer.SetChannelFrequency(OC_CHANNEL_2, new_freq);
+        timer.SetChannelFrequency(oc_channel_2, new_freq);
     }
     else
     {
         // We are now stepping at desired frequency so disable THIS interrupt until we need it again.
-        timer.SetChannelFrequency(OC_CHANNEL_4, 0);
+        timer.SetChannelFrequency(oc_channel_4, 0);
     }
 
     current_left_freq = new_freq;

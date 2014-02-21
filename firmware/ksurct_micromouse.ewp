@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.70.1.5793</state>
+          <state>6.70.2.6303</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1894,7 +1894,34 @@
       <name>maze</name>
       <group>
         <name>include</name>
+        <file>
+          <name>$PROJ_DIR$\source\maze\include\cell.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\maze\include\ipathfinding.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\maze\include\maze.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\maze\include\simplefloodfill.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\maze\include\weightedpathfinding.h</name>
+        </file>
       </group>
+      <file>
+        <name>$PROJ_DIR$\source\maze\cell.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\maze\maze.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\maze\simplefloodfill.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\maze\weightedpathfinding.cpp</name>
+      </file>
     </group>
     <group>
       <name>micromouse</name>
@@ -1935,6 +1962,9 @@
         </file>
         <file>
           <name>$PROJ_DIR$\source\utility\include\system_timer.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\utility\include\queue.h</name>
         </file>
         <file>
           <name>$PROJ_DIR$\source\utility\include\timer_interrupt_oc.h</name>

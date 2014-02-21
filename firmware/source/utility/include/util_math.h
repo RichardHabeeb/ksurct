@@ -104,4 +104,23 @@ inline T CapBounds
 
 } // cap_bounds()
 
+/*******************************************************************
+* Template: Mod
+*
+* Description: Returns a mathematical modulus, taking into account
+* negatives.
+*******************************************************************/
+template <typename T>
+inline T Mod
+	(
+		T x,
+		T m
+	)
+{
+	m       = (m < 0) ? -m : m;
+	int r	= x % m;
+	return (r < 0) ? r + m : r;
+}
+
+
 #endif // UTIL_MATH_H

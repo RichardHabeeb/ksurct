@@ -56,9 +56,34 @@ PID::PID
     saturation_low(saturation_low),
     integral_saturation_high(integral_saturation_high),
     integral_saturation_low(integral_saturation_low),
-    error_sum(0)
+    error_sum(0),
+    previous_error(0)
 {
 }// PID::PID() - Constructor
+
+/*****************************************************************************
+* Function: Calculate
+*
+* Description: Returns the controller output for a given error.  Derivative error is
+*              calculated as a simple dx/dt.  If a derivative error is already
+*              calculated then use overloaded method.
+*****************************************************************************/
+float PID::Calculate
+    (
+        float error,      // Difference between desired and actual measurement.
+        float delta_time  // Change in time since last measurement. (seconds)
+    )
+{
+    float derivative_error = 0.f;
+
+    if (delta_time != 0.0f) // Avoid division by zero.
+    {
+        derivative_error = (error - previous_error) / delta_time;
+    }
+
+    return Calculate(error, derivative_error, delta_time);
+
+} // PID::Calculate()
 
 /*****************************************************************************
 * Function: Calculate
@@ -68,9 +93,9 @@ PID::PID
 *****************************************************************************/
 float PID::Calculate
     (
-        float  error,
-        float  derivative_error,
-        double delta_time
+        float error,            // Difference between desired and actual measurement.
+        float derivative_error, // Change in error over specified change in time.
+        float delta_time        // Change in time since last measurement. (seconds)
     )
 {
     error_sum += error * delta_time;
@@ -84,34 +109,9 @@ float PID::Calculate
     // Ensure controller output is between saturation limits.
     result = CapBounds(result, saturation_low, saturation_high);
 
-   return result;
+    // Store error so can calculate derivative error as dx/dt if needed.
+    previous_error = error;
+
+    return result;
 
 } // PID::Calculate()
-
-/*****************************************************************************
-* Function: ScaledCalculate
-*
-* Description: Performs PID calculation by using the error and derivative error
-*              inputs. Returns the output scaled from -1 to 1 based on the
-*              saturation limits. e.g. Sat limits +/-5, if Calculate() output
-*              is 3, ScaledCalculate() output is (3-(5+(-5)/2))/((5-(-5)/2)) = 0.6
-*****************************************************************************/
-float PID::ScaledCalculate
-    (
-        float  error,
-        float  derivative_error,
-        double delta_time
-    )
-{
-    float result = Calculate(error, derivative_error, delta_time);
-
-    // Scale output
-    float midpoint = (saturation_high + saturation_low) / 2.0f;
-    float range    = (saturation_high - saturation_low) / 2.0f;
-
-    // Scales between -1 and 1, where 0 is the midpoint of the saturation range
-    float scaled_output = (result - midpoint) / range;
-
-    return scaled_output;
-
-} // PID::ScaledCalculate()

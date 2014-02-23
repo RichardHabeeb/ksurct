@@ -15,6 +15,7 @@
 #include "stm32f4xx.h"
 #include "gpio.h"
 #include "differential_paired_stepper_motors.h"
+#include "pid.h"
 #include "system_timer.h"
 #include "timer_interrupt_oc.h"
 

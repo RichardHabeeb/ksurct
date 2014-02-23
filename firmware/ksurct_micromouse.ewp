@@ -1934,6 +1934,9 @@
           <name>$PROJ_DIR$\source\utility\include\gpio.h</name>
         </file>
         <file>
+          <name>$PROJ_DIR$\source\utility\include\system_timer.h</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\source\utility\include\timer_interrupt_oc.h</name>
         </file>
         <file>
@@ -1942,6 +1945,9 @@
       </group>
       <file>
         <name>$PROJ_DIR$\source\utility\gpio.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\utility\system_timer.cpp</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\utility\timer_interrupt_oc.cpp</name>
@@ -1954,15 +1960,15 @@
   <group>
     <name>stm32f4xx</name>
     <group>
-      <name>inc</name>
+      <name>include</name>
       <file>
-        <name>$PROJ_DIR$\stm32f4xx\inc\stm32f4xx.h</name>
+        <name>$PROJ_DIR$\stm32f4xx\include\stm32f4xx.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\stm32f4xx\inc\stm32f4xx_conf.h</name>
+        <name>$PROJ_DIR$\stm32f4xx\include\stm32f4xx_conf.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\stm32f4xx\inc\system_stm32f4xx.h</name>
+        <name>$PROJ_DIR$\stm32f4xx\include\system_stm32f4xx.h</name>
       </file>
     </group>
     <group>

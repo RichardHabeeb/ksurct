@@ -79,6 +79,9 @@ Micromouse::Micromouse
 
     right_wall_calibrated_distance = 0.f;
 
+    starting_x_distance = 5.0f;
+    starting_y_distance = maze.get_cell_length() / 2.f;
+
     net_x_distance = starting_x_distance;
     net_y_distance = starting_y_distance;
 
@@ -86,9 +89,6 @@ Micromouse::Micromouse
 
     current_position.x = 0;
     current_position.y = 0;
-
-    starting_x_distance = 5.0f;
-    starting_y_distance = maze.get_cell_length() / 2.f;
 
     memset(&target_cell, 0, sizeof(target_cell));
 
@@ -124,8 +124,7 @@ void Micromouse::ResetToStartingCell(void)
 /*****************************************************************************
 * Function: SolveMaze
 *
-* Description: Attempts to find the middle of the maze.  Returns true if
-*              successful.
+* Description: Attempts to find the middle of the maze.  Returns true if successful.
 *****************************************************************************/
 bool Micromouse::SolveMaze(void)
 {
@@ -154,7 +153,6 @@ bool Micromouse::SolveMaze(void)
         switch (current_checkpoint_type)
         {
             case maze_evaluate_checkpoint:
-                maze.get_cell(current_position)->set_visited(true);
                 EvaluateMaze();
                 break;
             case turn_checkpoint:
@@ -253,6 +251,7 @@ void Micromouse::TravelForward
     )
 {
     // Start wheels spinning forward (might already be moving forward)
+    // This will also reset the current distance travelled reported by motors.
     motors.Drive(travelling_speed);
 
     // Current distance travelled not counting lateral error.
@@ -433,25 +432,27 @@ void Micromouse::Center(void)
 {
     double current_time = system_timer.get_time();
 
-    // TODO - Need to validate time first call every time begin centering to keep a
-    //        constant delta.
-
     float delta_time = (float)(current_time - last_centering_time);
 
     // Only want to run controls at a maximum frequency so make sure enough time has
     // elapsed before trying to run PID calculation again.
     if (delta_time >= minimum_centering_period)
     {
+        // In order to avoid large delta times due to not constantly centering (ie turning / etc)
+        // fix change in time to minimum period.  This should be ok since this method is getting
+        // constantly run when travelling forward.
+        delta_time = minimum_centering_period;
+
         float measured_distance = MeasureDistanceToRightWall();
 
         float commanded_distance = right_wall_calibrated_distance;
 
         float distance_error = commanded_distance - measured_distance;
 
-        float delta_linear_speed = centering_controller.Calculate(distance_error, delta_time);
+        //float delta_linear_speed = centering_controller.Calculate(distance_error, delta_time);
 
-        motors.set_right_forward_speed_offset(delta_linear_speed);
-        motors.set_left_forward_speed_offset(-delta_linear_speed);
+        //motors.DriveRight(travelling_speed + delta_linear_speed);
+        //motors.DriveLeft(travelling_speed - delta_linear_speed);
 
         last_centering_time = current_time;
     }
@@ -556,11 +557,14 @@ void Micromouse::SetupTargetCell
 /*****************************************************************************
 * Function: EvaluateMaze
 *
-* Description: Should be called whenever reach a maze evaluate checkpoint.
+* Description: Updates maze will wall and location information and then finds
+*              next target cell using maze solver.
 *****************************************************************************/
 void Micromouse::EvaluateMaze(void)
 {
     UpdateWalls();
+
+    maze.get_cell(current_position)->set_visited(true);
 
     FindNextPathSegment();
 
@@ -603,7 +607,7 @@ void Micromouse::Turn
 /*****************************************************************************
 * Function: HandleMazeSolve
 *
-* Description: Should be called whenever find middle of maze.
+* Description: Stops robot then performs special actions when finding middle of maze.
 *****************************************************************************/
 void Micromouse::HandleMazeSolve(void)
 {

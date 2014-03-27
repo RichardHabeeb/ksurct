@@ -93,9 +93,6 @@ DifferentialPairedStepperMotors::DifferentialPairedStepperMotors
     this->wheel_2_wheel_distance = wheel_2_wheel_distance; // centimeters
     this->pulses_per_step = pulses_per_step;
 
-    this->right_forward_speed_offset = 0.f;
-    this->left_forward_speed_offset  = 0.f;
-
     // Like circumference of robot. But diamter is between two wheels instead of outside.
     this->wheel_2_wheel_circumference = wheel_2_wheel_distance * PI; // centimeters
 
@@ -212,19 +209,55 @@ void DifferentialPairedStepperMotors::Drive
         float new_speed // cm / sec
     )
 {
-    float new_right_speed = new_speed + right_forward_speed_offset;
-    float new_left_speed  = new_speed - left_forward_speed_offset;
+    DriveRight(new_speed);
+    DriveLeft(new_speed);
 
-    uint32_t new_right_speed_full_steps_per_sec = (uint32_t)(AbsoluteValue(new_right_speed) * full_steps_per_cm);
-    uint32_t new_left_speed_full_steps_per_sec  = (uint32_t)(AbsoluteValue(new_left_speed)  * full_steps_per_cm);
-
-    motor_direction_t new_right_direction = (new_right_speed >= 0.f ? drive_forward : drive_backward);
-    motor_direction_t new_left_direction  = (new_left_speed  >= 0.f ? drive_forward : drive_backward);
-
-    right_motor->Drive(new_right_direction, new_right_speed_full_steps_per_sec);
-    left_motor->Drive(new_left_direction, new_left_speed_full_steps_per_sec);
+    right_motor->reset_current_steps();
+    left_motor->reset_current_steps();
 
 } // DifferentialPairedStepperMotors::Drive()
+
+/******************************************************************************
+* Name: DriveRight
+*
+* Description: Set right motor to drive at specified speed.  If speed is negative
+*              then motor will drive in reverse.
+*
+* Notes: Current steps are NOT reset when calling this function.
+******************************************************************************/
+void DifferentialPairedStepperMotors::DriveRight
+    (
+        float new_speed // cm / sec
+    )
+{
+    uint32_t new_right_speed_full_steps_per_sec = (uint32_t)(AbsoluteValue(new_speed) * full_steps_per_cm);
+
+    motor_direction_t new_right_direction = (new_speed >= 0.f ? drive_forward : drive_backward);
+
+    right_motor->Drive(new_right_direction, new_right_speed_full_steps_per_sec);
+
+} // DifferentialPairedStepperMotors::DriveRight()
+
+/******************************************************************************
+* Name: DriveLeft
+*
+* Description: Set left motor to drive at specified speed.  If speed is negative
+*              then motor will drive in reverse.
+*
+* Notes: Current steps are NOT reset when calling this function.
+******************************************************************************/
+void DifferentialPairedStepperMotors::DriveLeft
+    (
+        float new_speed // cm / sec
+    )
+{
+    uint32_t new_left_speed_full_steps_per_sec = (uint32_t)(AbsoluteValue(new_speed) * full_steps_per_cm);
+
+    motor_direction_t new_left_direction = (new_speed >= 0.f ? drive_forward : drive_backward);
+
+    left_motor->Drive(new_left_direction, new_left_speed_full_steps_per_sec);
+
+} // DifferentialPairedStepperMotors::DriveLeft()
 
 /******************************************************************************
 * Name: Turn
@@ -247,6 +280,9 @@ void DifferentialPairedStepperMotors::Turn
 
     // determine number of centimeters to wait until turn will finish
     float distance_to_turn = cm_per_degree_zero_point * turn_angle;
+
+    right_motor->reset_current_steps();
+    left_motor->reset_current_steps();
 
     if (new_direction == turn_right)
     {

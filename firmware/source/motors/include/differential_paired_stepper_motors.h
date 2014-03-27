@@ -55,11 +55,26 @@ public: // methods
     // Clears motor control fields and re-init both motors.
     void ReInitialize(void);
 
-    // Set both motors to drive at specified speed.  If speed is negative then motors will
-    // drive in reverse. If acceleration is enabled then the new speed will be accelerated
-    // to from the current speed, otherwise the motors will attempt to automatically
-    // jump to the new speed, which can sometime stall the motors.
+    // Set both motors to drive at specified speed and resets current step count.
+    // If speed is negative then motors will drive in reverse.
+    // If acceleration is enabled then the new speed will be accelerated to from the
+    // current speed, otherwise the motors will attempt to automatically jump to the new
+    // speed, which can sometime stall the motors.
     void Drive
+        (
+            float new_speed // cm / sec
+        );
+
+    // Set right motor to drive at speed.  If speed is negative then motor will drive in reverse.
+    // Note: Current steps are NOT reset when calling this function.
+    void DriveRight
+        (
+            float new_speed // cm / sec
+        );
+
+    // Set left motor to drive at speed.  If speed is negative then motor will drive in reverse.
+    // Note: Current steps are NOT reset when calling this function.
+    void DriveLeft
         (
             float new_speed // cm / sec
         );
@@ -84,10 +99,6 @@ public: // methods
     float get_right_motor_total_distance(void);
     float get_left_motor_total_distance(void);
     float get_wheel_base_distance(void) { return wheel_2_wheel_distance; }
-
-    // Setters
-    void set_right_forward_speed_offset(float offset) { this->right_forward_speed_offset = offset; }
-    void set_left_forward_speed_offset(float offset) { this->left_forward_speed_offset = offset; }
 
 private: // methods
 
@@ -114,10 +125,6 @@ private: // fields
 
     // Number of steps need for the wheel to make one full rotation.
     float full_steps_per_revolution;
-
-    // Speed offset (in cm/sec) to apply to each motor when driving forward.
-    float right_forward_speed_offset;
-    float left_forward_speed_offset;
 
     // Number of pulses that make up one full step
     // Ie 2 for half-stepping, 4 for quarter stepping, etc

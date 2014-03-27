@@ -125,10 +125,11 @@ private: // methods
     // new cell is being explored.
     void UpdateWalls(void);
 
-    // Manages fields and special actions whenver a 'maze solve' checkpoint is reached.
+    // Stops robot then performs special actions when finding middle of maze.
     void HandleMazeSolve(void);
 
-    // Should be called whenever reach a maze evaluate checkpoint.
+    // Updates maze will wall and location information and then finds next target cell
+    // using maze solver.
     void EvaluateMaze(void);
 
     // Uses the current maze evaluation algorithm in order to determine how many cells we
@@ -152,7 +153,7 @@ private: // methods
             bool is_wall_on_left
         );
 
-    // Should be called whenever reach a turn checkpoint.
+    // Turns the specified direction taking into account any error in forward angle.
     void Turn
         (
             direction_t direction_to_turn

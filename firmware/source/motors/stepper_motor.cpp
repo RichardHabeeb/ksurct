@@ -214,16 +214,9 @@ inline void StepperMotor::SetDirection
 ******************************************************************************/
 void StepperMotor::SetTargetSpeed
     (
-        uint32_t new_speed, // Full steps per seconds
-        bool reset_steps // Reset current steps (defaults to true)
+        uint32_t new_speed // Full steps per seconds
     )
 {
-    // Reset number of current steps.
-    if (reset_steps)
-    {
-        current_steps = 0;
-    }
-
     target_speed = new_speed;
 
     // Calculate new 'speed change' value that the current speed will be incremented by

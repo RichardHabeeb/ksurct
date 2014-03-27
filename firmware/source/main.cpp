@@ -63,9 +63,9 @@ int main(void)
                                                   16);  // Pulses per full steps (for microstepping)
 
     // TODO: Figure out gains / limits
-    static PID centering_controller(1,    // Proportional Gain
+    static PID centering_controller(0,    // Proportional Gain
                                     0,    // Integral Gain
-                                    1,    // Derivative Gain
+                                    0,    // Derivative Gain
                                     10,   // Upper Output Saturation Limit
                                     -10,  // Lower Output Saturation Limit
                                     5,    // Upper Error Integral Saturation Limit

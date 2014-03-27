@@ -108,14 +108,15 @@ public: // methods
 
     void set_update_total_steps(bool update) { update_total_steps = update; }
 
+    void reset_current_steps(void) { current_steps = 0; }
+
 private: // methods
 
     // Updates the speed the motor is trying to reach.  If acceleration is enabled in the
     // motor control then this speed will be instantly realized next interrupt service routine.
     void SetTargetSpeed
         (
-            uint32_t new_speed, // Full steps per second.
-            bool reset_steps = true // True if want to reset current step count.
+            uint32_t new_speed // Full steps per second.
         );
 
     // When acceleration is enabled this helper method is used to update the current speed

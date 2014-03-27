@@ -45,6 +45,7 @@ Maze::Maze
 {
     this->number_rows    = number_rows;
     this->number_columns = number_columns;
+    this->cell_length    = cell_length;
 
 	cell_index = new Cell**[number_rows];
 
@@ -94,6 +95,21 @@ Cell* Maze::get_cell
 		return cell_index[r][c];
 	else
 		return _NULL;
+
+} // get_cell()
+
+/*****************************************************************************
+* Function: get_cell
+*
+* Description:
+*****************************************************************************/
+Cell* Maze::get_cell
+	(
+		position_t cell_position
+	)
+{
+	return get_cell(cell_position.y, cell_position.x);
+
 } // get_cell()
 
 /*****************************************************************************

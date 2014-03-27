@@ -12,7 +12,9 @@
 /*---------------------------------------------------------------------------------------
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
+
 #include "cell.h"
+#include "frame_of_references.h"
 #include "stm32f4xx.h"
 
 /*---------------------------------------------------------------------------------------
@@ -78,32 +80,22 @@ public: // methods
     // Once the maze has been solved we need to go back to the start cell.
     void SwapStartingAndGoal(void);
 
-    // swap the row and column of every cell in the maze.
+    // Swap the row and column of every cell in the maze.
     void Transpose(void);
 
-    void set_starting_cell
-        (
-            uint32_t r, // Row of starting cell
-            uint32_t c  // Column of starting cell
-        )
-    {
-        starting_cell = cell_index[r][c];
-    }
+    void set_starting_cell (uint32_t r, uint32_t c) { starting_cell = cell_index[r][c]; }
 
-    void set_goal_cell
-        (
-            uint32_t r, // Row of goal cell
-            uint32_t c  // Column of goal cell
-        )
-    {
-        goal_cell = cell_index[r][c];
-    }
-
+    void set_goal_cell (uint32_t r, uint32_t c ) { goal_cell = cell_index[r][c]; }
 
     Cell* get_cell
         (
             uint32_t r,
             uint32_t c
+        );
+
+    Cell* get_cell
+        (
+            position_t cell_position
         );
 
     Cell* get_starting_cell(void) const { return starting_cell; }

@@ -136,6 +136,8 @@ bool Micromouse::SolveMaze(void)
     //    CalibrateSideWallDistance();
     //}
 
+    maze.get_cell(current_position)->set_visited(true);
+
     // Need to do an initial maze evaluation in order to get our bearings and determine
     // the cell that's going to be our initial target cell.
     EvaluateMaze();
@@ -152,6 +154,7 @@ bool Micromouse::SolveMaze(void)
         switch (current_checkpoint_type)
         {
             case maze_evaluate_checkpoint:
+                maze.get_cell(current_position)->set_visited(true);
                 EvaluateMaze();
                 break;
             case turn_checkpoint:
@@ -291,7 +294,6 @@ void Micromouse::TravelForward
         last_left_distance  = left_distance;
     }
 
-    // TODO: write this function.
     UpdateNetLocation(forward_distance, lateral_distance);
 
 } // Micromouse::TravelForward()
@@ -341,7 +343,7 @@ void Micromouse::UpdateWalls(void)
     // TODO update with actual sensor values.
     float right_side_distance = 0.f;
     float left_side_distance  = 0.f;
-    float forward_distance    = 0.f;
+    float forward_distance    = 100.f;
 
     bool is_wall_on_right = right_side_distance <= thresholds.side;
     bool is_wall_on_left  = left_side_distance  <= thresholds.side;
@@ -355,7 +357,7 @@ void Micromouse::UpdateWalls(void)
     // Even if we still don't know our original heading still update walls so can run
     // maze evaluator regardless.  It's easy to switch the walls later.
 
-    Cell * current_cell = maze.get_cell(current_position.y, current_position.x);
+    Cell * current_cell = maze.get_cell(current_position);
 
     if (is_wall_on_right)
     {
@@ -431,6 +433,9 @@ void Micromouse::Center(void)
 {
     double current_time = system_timer.get_time();
 
+    // TODO - Need to validate time first call every time begin centering to keep a
+    //        constant delta.
+
     float delta_time = (float)(current_time - last_centering_time);
 
     // Only want to run controls at a maximum frequency so make sure enough time has
@@ -498,10 +503,10 @@ float Micromouse::MeasureDistanceToRightWall(void)
 *****************************************************************************/
 void Micromouse::FindNextPathSegment(void)
 {
-    uint32_t cells_to_travel = 0;
+    uint32_t cells_to_travel = 1; // Initializing to 1 instead of zero for testing.
     cardinal_t next_heading = north;
 
-    path_finder.FindNextPathSegment(current_position.y, current_position.x, current_heading, &next_heading, &cells_to_travel);
+    //path_finder.FindNextPathSegment(current_position.y, current_position.x, current_heading, &next_heading, &cells_to_travel);
 
     SetupTargetCell(cells_to_travel, next_heading);
 
@@ -533,8 +538,7 @@ void Micromouse::SetupTargetCell
     {
         new_target.position = ForwardPosition(forward_offset);
 
-        const Cell * forward_cell = maze.get_cell(new_target.position.y, new_target.position.x);
-        new_target.has_been_visited = forward_cell->get_visited();
+        new_target.has_been_visited = maze.get_cell(new_target.position)->get_visited();
 
         if (!new_target.has_been_visited)
         {
@@ -657,7 +661,7 @@ void Micromouse::CapPositionToMazeSize
         position_t * cell // Reference to cell to cap.
     )
 {
-    if (cell == NULL) return;
+    if (cell == NULL) { return; }
 
     cell->x = CapBounds<uint8_t>(cell->x, 0, maze.get_number_columns() - 1);
     cell->y = CapBounds<uint8_t>(cell->y, 0, maze.get_number_rows() - 1);

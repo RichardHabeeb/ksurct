@@ -34,7 +34,7 @@ const float minimum_centering_period = .01; // seconds
 
 // Distance (in centimeters) before the target cell center that the maze evaulation action
 // (map walls/flood maze/setup target information, etc) needs to occur.
-const float maze_evaluate_checkpoint_offset_distance = 9.0f;
+const float maze_evaluate_checkpoint_offset_distance = 5.5f;
 
 /*---------------------------------------------------------------------------------------
 *                                      VARIABLES
@@ -156,7 +156,7 @@ bool Micromouse::SolveMaze(void)
                 EvaluateMaze();
                 break;
             case turn_checkpoint:
-                Turn(ConvertToDirection(target_cell.next_heading, current_heading));
+                Turn(target_cell.next_heading);
                 FindNextPathSegment();
                 break;
             case maze_solve_checkpoint:
@@ -283,7 +283,7 @@ void Micromouse::TravelForward
         float delta_left_distance  = left_distance  - last_left_distance;
 
         // Calculate incremental distance that center of robot has moved.
-        float delta_distance_travelled = fabs(delta_right_distance - delta_left_distance) / 2.f;
+        float delta_distance_travelled = fabs(delta_right_distance + delta_left_distance) / 2.f;
 
         forward_distance += delta_distance_travelled * cosf(forward_angle);
         lateral_distance += delta_distance_travelled * sinf(forward_angle);
@@ -345,7 +345,7 @@ void Micromouse::UpdateWalls(void)
 
     bool is_wall_on_right = right_side_distance <= thresholds.side;
     bool is_wall_on_left  = left_side_distance  <= thresholds.side;
-    bool is_wall_in_front = front_distance      <= thresholds.front;
+    bool is_wall_in_front = front_distance      <= (thresholds.front + maze_evaluate_checkpoint_offset_distance);
 
     if (!know_original_heading)
     {
@@ -448,10 +448,10 @@ void Micromouse::Center(void)
 
         float distance_error = commanded_distance - measured_distance;
 
-        //float delta_linear_speed = centering_controller.Calculate(distance_error, delta_time);
+        float delta_linear_speed = centering_controller.Calculate(distance_error, delta_time);
 
-        //motors.DriveRight(travelling_speed + delta_linear_speed);
-        //motors.DriveLeft(travelling_speed - delta_linear_speed);
+        motors.DriveRight(travelling_speed + delta_linear_speed);
+        motors.DriveLeft(travelling_speed - delta_linear_speed);
 
         last_centering_time = current_time;
     }
@@ -572,14 +572,16 @@ void Micromouse::EvaluateMaze(void)
 /*****************************************************************************
 * Function: Turn
 *
-* Description: Turns the specified direction taking into account any error in
-*              forward angle.
+* Description: Turns to face the specified heading while also taking into account
+*              any forward angle error.
 *****************************************************************************/
 void Micromouse::Turn
     (
-        direction_t direction_to_turn
+        heading_t heading_to_face // New heading to point torwards (north, east, etc)
     )
 {
+    direction_t direction_to_turn = ConvertToDirection(heading_to_face, current_heading);
+
     float forward_angle_in_degrees = forward_angle * degrees_per_radian;
 
     switch (direction_to_turn)
@@ -594,6 +596,8 @@ void Micromouse::Turn
             motors.Turn(turn_left, 180.f + forward_angle_in_degrees); // Turn around.
             break;
     }
+
+    current_heading = heading_to_face;
 
     // Turning is our reset case for heading used for odometry.
     forward_angle = 0.f;
@@ -642,9 +646,9 @@ position_t Micromouse::ForwardPosition
 
     switch (current_heading)
     {
-        case north:   forward_cell.y += forward_cell_offset;    break;
+        case north:   forward_cell.y -= forward_cell_offset;    break;
         case east:    forward_cell.x += forward_cell_offset;    break;
-        case south:   forward_cell.y -= forward_cell_offset;    break;
+        case south:   forward_cell.y += forward_cell_offset;    break;
         case west:    forward_cell.x -= forward_cell_offset;    break;
     }
 

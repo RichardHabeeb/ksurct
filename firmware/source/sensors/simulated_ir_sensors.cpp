@@ -104,9 +104,9 @@ float SimulatedIRSensors::ReadDistance
 
         switch (sensor_heading)
         {
-            case north:   current_position.y++;    break;
+            case north:   current_position.y--;    break;
             case east:    current_position.x++;    break;
-            case south:   current_position.y--;    break;
+            case south:   current_position.y++;    break;
             case west:    current_position.x--;    break;
         }
     }

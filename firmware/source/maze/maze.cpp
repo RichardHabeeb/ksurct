@@ -68,6 +68,10 @@ Maze::Maze
 			}
 		}
 	}
+
+    this->starting_cell = get_cell(0, 0);
+    this->goal_cell     = get_cell(number_rows/2, number_columns/2);
+
 } // Maze()
 
 /*****************************************************************************

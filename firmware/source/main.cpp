@@ -59,13 +59,14 @@ int main(void)
 
     //Maze * maze = new Maze(number_of_rows, number_of_columns, cell_length);
     Maze * maze = TestMazeCreator().CreateMaze(number_of_rows, number_of_columns, cell_length);
+    maze->set_starting_cell(0, 0);
     maze->set_goal_cell(number_of_rows/2, number_of_columns/2);
 
     if (maze == NULL) { return 1; }
 
     static SimpleFloodFill simple_flood_fill(maze);
 
-    static DifferentialPairedStepperMotors motors(true, // Acceleration enabled
+    static DifferentialPairedStepperMotors motors(false, // Acceleration enabled
                                                   180,  // Turn speed (degrees per second)
                                                   6,    // Wheel diameter (centimeters)
                                                   11,   // Wheel base (centimeters)

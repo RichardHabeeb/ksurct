@@ -163,10 +163,10 @@ private: // methods
             bool is_wall_on_left
         );
 
-    // Turns the specified direction taking into account any error in forward angle.
+    // Turns to face the specified heading while also taking into account any forward angle error.
     void Turn
         (
-            direction_t direction_to_turn
+            heading_t heading_to_face // New heading to point torwards (north, east, etc)
         );
 
     // Keeps robot in middle of the cells when driving forward through the maze.

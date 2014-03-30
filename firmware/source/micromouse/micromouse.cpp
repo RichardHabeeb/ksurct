@@ -53,6 +53,7 @@ Micromouse::Micromouse
     (
         Maze                            & maze,                 // Maze to solve.
         IPathFinder                     & path_finder,          // Used to find center of maze.
+        IDistanceSensors                & sensors,              // Sensors to find distance to walls.
         DifferentialPairedStepperMotors & motors,               // Differential motor driver reference.
         PID                             & centering_controller, // Controller for staying in middle of cell.
         wall_threshold_t          const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
@@ -60,6 +61,7 @@ Micromouse::Micromouse
     ) :
     maze(maze),
     path_finder(path_finder),
+    sensors(sensors),
     motors(motors),
     centering_controller(centering_controller)
 {
@@ -128,12 +130,10 @@ void Micromouse::ResetToStartingCell(void)
 *****************************************************************************/
 bool Micromouse::SolveMaze(void)
 {
+    // TODO: Determine if need to actually calibrate this at start. Currently it's only
+    //       being used for centering in cell.  Could also use as an offset to the mapping
+    //       defined by sensors class.
     right_wall_calibrated_distance = maze.get_cell_length() / 2.0f;
-    //if (!have_calibrated_side_wall_distance)
-    //{
-        // Measure distance to try to maintain from wall.
-    //    CalibrateSideWallDistance();
-    //}
 
     maze.get_cell(current_position)->set_visited(true);
 
@@ -339,14 +339,13 @@ void Micromouse::UpdateNetLocation
 *****************************************************************************/
 void Micromouse::UpdateWalls(void)
 {
-    // TODO update with actual sensor values.
-    float right_side_distance = 0.f;
-    float left_side_distance  = 0.f;
-    float forward_distance    = 100.f;
+    float right_side_distance = sensors.ReadDistance(sensor_id_right);
+    float left_side_distance  = sensors.ReadDistance(sensor_id_left);
+    float front_distance      = sensors.ReadDistance(sensor_id_front);
 
     bool is_wall_on_right = right_side_distance <= thresholds.side;
     bool is_wall_on_left  = left_side_distance  <= thresholds.side;
-    bool is_wall_in_front = forward_distance    <= thresholds.front;
+    bool is_wall_in_front = front_distance      <= thresholds.front;
 
     if (!know_original_heading)
     {
@@ -469,8 +468,8 @@ void Micromouse::Center(void)
 *****************************************************************************/
 float Micromouse::MeasureDistanceToRightWall(void)
 {
-    float right_side_distance = 0.f; // TODO: actually get distance.
-    float left_side_distance  = 0.f; // TODO: actually get distance.
+    float right_side_distance = sensors.ReadDistance(sensor_id_right);
+    float left_side_distance  = sensors.ReadDistance(sensor_id_left);
 
     bool is_wall_on_right = right_side_distance <= thresholds.side;
     bool is_wall_on_left  = left_side_distance  <= thresholds.side;
@@ -507,7 +506,7 @@ void Micromouse::FindNextPathSegment(void)
     uint32_t cells_to_travel = 1; // Initializing to 1 instead of zero for testing.
     cardinal_t next_heading = north;
 
-    //path_finder.FindNextPathSegment(current_position.y, current_position.x, current_heading, &next_heading, &cells_to_travel);
+    path_finder.FindNextPathSegment(current_position.y, current_position.x, current_heading, &next_heading, &cells_to_travel);
 
     SetupTargetCell(cells_to_travel, next_heading);
 

@@ -1,0 +1,28 @@
+# Maze.txt
+# 
+# Usage: Draw a maze out of ascii pipe and underscore characters below these comments.
+#        Run 'maze_converter.py' passing in this filename for the only argument.
+#        './maze_converter.py  maze.txt'
+#        This will create a file called 'maze_hex.h'.
+#        Use the 'TestMazeCreator' class to create a Maze.  The class will automatically look in the 'tools' directory.
+#
+# Rules: First line after this comment section must be the start of the maze (just underscores for the north walls of the first row)
+#        Must have at least one cell.
+#        All 'middle' of cells must align with an odd number column (zero based)
+ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+|_ _ _  |_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_| |_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_| |_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|   |_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_| |_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_| |_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_| |_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_| |_|_|   |_|_|_|_|_|_|_|
+|_|_|_|_|_   _|_ _  |_|_|_|_|_|_|
+|_|_|_|_|_| |_|_|_| |_|_|_|_|_|_|
+|_|_|_|_|_|_ _ _ _ _|_|_|_|_|_|_|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|

@@ -16,6 +16,7 @@
 #include <stdint.h>
 
 #include "differential_paired_stepper_motors.h"
+#include "distance_sensors_interface.h"
 #include "frame_of_references.h"
 #include "ipathfinder.h"
 #include "maze.h"
@@ -74,6 +75,7 @@ public: // methods
         (
             Maze                            & maze,                 // Maze to solve.
             IPathFinder                     & path_finder,          // Used to find center of maze.
+            IDistanceSensors                & sensors,              // Sensors to find distance to walls.
             DifferentialPairedStepperMotors & motors,               // Differential motor driver reference.
             PID                             & centering_controller, // Controller for staying in middle of cell.
             wall_threshold_t          const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
@@ -96,7 +98,15 @@ public: // methods
             float distance_to_travel // In centimeters
         );
 
+    // Setters
     void set_travelling_speed(float new_speed) { this->travelling_speed = new_speed; }
+
+    // Getters. Distances are in centimeters and angles are in radians.
+    float get_foward_angle(void) const { return this->forward_angle; }
+    float get_x_distance(void) const { return this->net_x_distance; }
+    float get_y_distance(void) const { return this->net_y_distance; }
+    position_t get_position(void) const { return this->current_position; }
+    heading_t get_heading(void) const { return this->current_heading; }
 
 private: // methods
 
@@ -186,6 +196,9 @@ private: // fields
 
     // Used to find center of maze.
     IPathFinder & path_finder;
+
+    // Sensors to find distance to walls.
+    IDistanceSensors & sensors;
 
     // Reference to motors that share the same axis of rotation. (Side by side)
     DifferentialPairedStepperMotors & motors;

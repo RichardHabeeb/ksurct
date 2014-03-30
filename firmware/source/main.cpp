@@ -18,7 +18,9 @@
 #include "micromouse.h"
 #include "pid.h"
 #include "simplefloodfill.h"
+#include "simulated_ir_sensors.h"
 #include "system_timer.h"
+#include "test_maze_creator.h"
 #include "timer_interrupt_oc.h"
 #include "weightedpathfinding.h"
 
@@ -51,9 +53,17 @@ SystemTimer system_timer;
 *****************************************************************************/
 int main(void)
 {
-    static Maze maze(16, 16, 18.0f);
+    uint32_t number_of_rows    = 16;
+    uint32_t number_of_columns = 16;
+    float    cell_length       = 18.0f;
 
-    static SimpleFloodFill simple_flood_fill(&maze);
+    //Maze * maze = new Maze(number_of_rows, number_of_columns, cell_length);
+    Maze * maze = TestMazeCreator().CreateMaze(number_of_rows, number_of_columns, cell_length);
+    maze->set_goal_cell(number_of_rows/2, number_of_columns/2);
+
+    if (maze == NULL) { return 1; }
+
+    static SimpleFloodFill simple_flood_fill(maze);
 
     static DifferentialPairedStepperMotors motors(true, // Acceleration enabled
                                                   180,  // Turn speed (degrees per second)
@@ -71,9 +81,18 @@ int main(void)
                                     5,    // Upper Error Integral Saturation Limit
                                     -5);  // Lower Error Integral Saturation Limit
 
-    static wall_threshold_t wall_thresholds = { 12.f, 0.f, 12.f };
 
-    Micromouse micromouse(maze, simple_flood_fill, motors, centering_controller, wall_thresholds, 18.f);
+    wall_threshold_t wall_thresholds;
+    wall_thresholds.front = (maze->get_cell_length() / 2.f) + 5.f;
+    wall_thresholds.side  = (maze->get_cell_length() / 2.f) + 5.f;
+
+    static SimulatedIRSensors ir_sensors;
+
+    static Micromouse micromouse(*maze, simple_flood_fill, ir_sensors, motors, centering_controller, wall_thresholds, 18.f);
+
+    // Just do this if using simulated ir sensors so it knows what distances to return.
+    ir_sensors.set_maze(*maze);
+    ir_sensors.set_micromouse(micromouse);
 
     motors.Initialize();
 

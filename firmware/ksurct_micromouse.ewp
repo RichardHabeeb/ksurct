@@ -1907,6 +1907,9 @@
           <name>$PROJ_DIR$\source\maze\include\simplefloodfill.h</name>
         </file>
         <file>
+          <name>$PROJ_DIR$\source\maze\include\test_maze_creator.h</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\source\maze\include\weightedpathfinding.h</name>
         </file>
       </group>
@@ -1918,6 +1921,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\maze\simplefloodfill.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\maze\test_maze_creator.cpp</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\maze\weightedpathfinding.cpp</name>
@@ -1957,7 +1963,16 @@
       <name>sensors</name>
       <group>
         <name>include</name>
+        <file>
+          <name>$PROJ_DIR$\source\sensors\include\distance_sensors_interface.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\sensors\include\simulated_ir_sensors.h</name>
+        </file>
       </group>
+      <file>
+        <name>$PROJ_DIR$\source\sensors\simulated_ir_sensors.cpp</name>
+      </file>
     </group>
     <group>
       <name>utility</name>

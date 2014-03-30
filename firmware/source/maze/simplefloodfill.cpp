@@ -69,37 +69,41 @@ SimpleFloodFill::~SimpleFloodFill
 *****************************************************************************/
 void SimpleFloodFill::FindNextPathSegment
 	(
-		uint32_t		robot_current_row, // the current row of the robot
-		uint32_t		robot_current_col,  // the current col of the robot
-		heading_t		robot_current_heading, // the current heading of the robot
-		heading_t*		next_heading, //out param of the next heading to travel
-		uint32_t*		cells_to_travel // out param of the number of cells to travel in the given direction
+		uint32_t		robot_current_row,      // the current row of the robot
+		uint32_t		robot_current_col,      // the current col of the robot
+		heading_t		robot_current_heading,  // the current heading of the robot
+		heading_t*		next_heading,           // out param of the next heading to travel
+		uint32_t*		cells_to_travel         // out param of the number of cells to travel in the given direction
 	)
 {
-	Cell* start_cell			        = m->get_cell(robot_current_row, robot_current_col);
-	Cell* goal_cell					= m->get_goal_cell();
-	uint32_t cells_traveled_in_current_heading	= 0;
-	uint32_t depth					= FloodFill();
+        Cell* goal_cell		= m->get_goal_cell();
+        Cell* current_cell      = m->get_cell(robot_current_row, robot_current_col);
+        uint32_t depth		= FloodFill();
+        *cells_to_travel        = 0;
 
-	if (depth == MAX_FLOOD_DEPTH) return;
+        if (depth == MAX_FLOOD_DEPTH) return;
 
-	do
-	{
-		for (unsigned char i = 0; i < num_cardinal_directions; i++)
-		{
-			heading_t h			= (robot_current_heading + i) % num_cardinal_directions;
-			Cell* adjacent_cell		= start_cell->get_adjacent_cell(h);
+        while (current_cell != _NULL && current_cell != goal_cell)
+        {
+                for (heading_t h = north; h < num_cardinal_directions; h++)
+                {
+                        Cell* adjacent_cell = current_cell->get_adjacent_cell(h);
 
-			if (adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == depth - 1)
-			{
-				cells_traveled_in_current_heading	= (robot_current_heading == h) ? cells_traveled_in_current_heading + 1 : 0;
-				robot_current_heading			= h;
-				start_cell				= adjacent_cell;
-				break;
+                        if (adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == *((int32_t*)current_cell->get_data()) - 1)
+                        {
+                                if(h != robot_current_heading)
+                                {
+                                     *next_heading = h;
+                                     return;
+                                }
+                                *cells_to_travel += 1;
+                                current_cell = adjacent_cell;
+                                break;
 
-			}
-		}
-	} while (start_cell != goal_cell && --depth > 0);
+                        }
+
+                }
+        }
 
 } // FindNextPathSegment()
 
@@ -111,40 +115,40 @@ void SimpleFloodFill::FindNextPathSegment
 *****************************************************************************/
 uint32_t SimpleFloodFill::FloodFill(void)
 {
-	Cell* start_cell			= m->get_starting_cell();
-	Cell* goal_cell				= m->get_goal_cell();
-	uint32_t depth			= 1;
+        Cell* start_cell		= m->get_starting_cell();
+        Cell* goal_cell		    = m->get_goal_cell();
+        uint32_t depth			= 1;
 
-	m->Map(SimpleFloodFill::ResetCellData);
+        m->Map(SimpleFloodFill::ResetCellData);
 
-	*((int32_t*)goal_cell->get_data()) = 1;
+        *((int32_t*)goal_cell->get_data()) = 1;
 
-	while (++depth < max_flood_depth)
-	{
-		for (uint32_t r = 0; r < m->get_number_rows() ; r++)
-		{
-			for (uint32_t c = 0; c < m->get_number_columns(); c++)
-			{
-				Cell* search_cell = m->get_cell(r, c);
-				if (*((int32_t*)search_cell->get_data()) == 0)
-				{
-					for (heading_t h = north; h < num_cardinal_directions; h++)
-					{
-						Cell* adjacent_cell = search_cell->get_adjacent_cell(h);
+        while (++depth < MAX_FLOOD_DEPTH)
+        {
+                for (uint32_t r = 0; r < m->get_number_rows() ; r++)
+                {
+                        for (uint32_t c = 0; c < m->get_number_columns(); c++)
+                        {
+                                Cell* search_cell = m->get_cell(r, c);
+                                if (*((int32_t*)search_cell->get_data()) == 0)
+                                {
+                                        for (heading_t h = north; h < num_cardinal_directions; h++)
+                                        {
+                                                Cell* adjacent_cell = search_cell->get_adjacent_cell(h);
 
-						if (adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == depth - 1)
-						{
-							*((int32_t*)search_cell->get_data()) = depth;
-							if (search_cell == start_cell)
-								return depth;
-						}
-					}
-				}
-			}
-		}
-	}
+                                                if (adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == depth - 1)
+                                                {
+                                                        *((int32_t*)search_cell->get_data()) = depth;
+                                                        if (search_cell == start_cell)
+                                                                return depth;
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
 
-	return max_flood_depth;
+	return MAX_FLOOD_DEPTH;
 } // FloodFill()
 
 

@@ -80,7 +80,6 @@ private: // methods
 
 
 private: // fields
-	uint32_t			max_flood_depth;
 	Maze*				m;
 
 

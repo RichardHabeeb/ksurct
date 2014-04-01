@@ -41,18 +41,24 @@ class PID /// <--- Class names use camel case with first letter capitalized.
 public: // methods
 
     PID
-    (
-        float kp,     // Constant for proportional term
-        float ki,     // Constant for integral term
-        float kd,     // Constant for derivative term
-        float limit,  // Output limit cap for calculation
-        float i_limit // Integral error summation cap limit
-    );
+        (
+            float kp,     // Constant for proportional term
+            float ki,     // Constant for integral term
+            float kd,     // Constant for derivative term
+            float limit,  // Output limit cap for calculation
+            float i_limit // Integral error summation cap limit
+        );
 
     void set_setpoint /// This is a setter so use lower case 'set_' followed by name of variable.  Same for getters.
-    (
-        float setpoint // New setpoint value
-    );
+        (
+            float setpoint // New setpoint value
+        );
+        
+    /// Trivial setters can just be defined here in the class definition.
+    void set_kp(float new_kp) { this->kp = new_kp; }
+    
+    /// Same with getters. 
+    float get_kp(void) const { return kp; }
     
     /// From Google C++ style guide.
     /// "Every function declaration should have comments immediately preceding it that describe what the function does and how to use it.
@@ -67,10 +73,10 @@ public: // methods
     // flexible and the output value depends on the input units and the gain units.  Its possible
     // for the output limit to saturate depending on the 'limit' field of the class.    
     float Calculate /// Normal function so use camel case with first letter capitalized.
-    (
-        float value, // New value to perform calculation on
-        float dt     // Seconds since last calculation
-    );
+        (
+            float value, // New value to perform calculation on
+            float dt     // Seconds since last calculation
+        );
 
 public: // fields  /// <---- if you put something in here have a good reason for making it public
 

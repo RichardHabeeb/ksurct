@@ -18,12 +18,13 @@
 /// exceed past column 90.
 
 /// In general ONLY use /* */ style comments for file, section, or function blocks.
-/// So in most cases use double slash ('///') comments.
+/// So in most cases use double slash ('//') comments. I use triple slash in this example
+/// to show that they're not real code comments, just narration comments like this one.
 
 /// When ever you define a constant or variable that has some type of units associated with it
 /// clearly define these units in the comment.
 
-/// Since we're doing embedded work ALWAYS use floats instead of doubles.  Do not mix the two.
+/// Since we're doing embedded work almost always use floats instead of doubles.  Do not mix the two.
 /// If you need more precision/range then a float can offer then use a double, but be careful
 /// in doing so.
 
@@ -99,34 +100,30 @@
 // Always have a comment above a struct that describes it.  Even if it's fields are
 // also commented.  Note these field names are not descriptive enough and pxl_cnt is
 // abbreviated by taking out letters.  Both of these are bad.  Instead the field names
-// should be 'bits_per_pixel' and 'pixel_count'.  Then comments on each wouldn't be
-// needed at all.
+// should be 'bits_per_pixel' and 'pixel_count'. 
 typedef struct
 {
     int     bpp;        // bits per pixel
     int     pxl_cnt;    // pixel count
 } image_header_t;
 
-// When creating types for enumerations, type define a new type to be used when passing
-// around these constants.  Then create an anonymous enum for your constants.
-// Always provide a general description right above, like where this comment section is at.
-typedef uint8_t cardinal_direction_t;
-enum
+// Example of enumerated type.
+typedef enum
 {
     NORTH,
     EAST,
     SOUTH,
     WEST
-};
+} cardinal_direction_t;
 
 /*---------------------------------------------------------------------------------------
-                                    MEMORY CONSTANTS
----------------------------------------------------------------------------------------*/
+*                                   MEMORY CONSTANTS
+*--------------------------------------------------------------------------------------*/
 
 uint32_t const some_constant = 800; // Describe constant here with units if applicable
 
-// Can also put description here if it is too long to fit on a signle line ya ya ya ya
-// you know what I mean. I'm tired.
+// Can also put description here if it is too long to fit on a single line single line it 
+// just keeps going and going and going.
 float const some_other_cool_constant = 75.323432;
 
 /// **Note in C++ (not C) const implies internal linkage so you don't need to define
@@ -143,7 +140,7 @@ static int         foo_call_count;        // Times foo() has been called
 static a_data_type some_descriptive_name; // Some other value
 
 /*---------------------------------------------------------------------------------------
-*                                    CLASS METHODS  // Note this could be PROCEDURES or TEMPLATES or something else
+*                                    CLASS METHODS  // Note this could be PROCEDURES or something else
 *--------------------------------------------------------------------------------------*/
 
 /// Always list arguments in a function starting with all 'input' arguments and
@@ -166,10 +163,9 @@ int some_function(void);
 /// It's okay to recapitulate briefly what the function does, but the focus of the comments should be on how it does it."
 
 /*****************************************************************************
-* Function: PID - Constructor
+* Function: PID
 *
-* Description: Initializes fields for new instance of PID object.  All other
-*              fields are initialized to zero.
+* Description: Constructor
 *****************************************************************************/
 PID::PID
     (
@@ -188,7 +184,7 @@ PID::PID
     output_limit(limit),
     integral_limit(i_limit)
 {
-} // PID() - Constructor
+} // PID::PID() - Constructor
 
 /*****************************************************************************
 * Function: set_setpoint
@@ -203,7 +199,7 @@ void PID::set_setpoint
     this->setpoint = setpoint;
     error_sum = 0;
                        /// <----- Always put a single blank line after last valid statement in function
-} // set_setpoint()
+} // PID::set_setpoint()
 
 /// **Notice at the closing brace of every method/function there is the name
 /// of the function followed by an empty set of parentheses.
@@ -249,5 +245,5 @@ float PID::Calculate
 
     return output;
                           /// <----- Always put a single blank line after last valid statement in function
-} // Calculate()
+} // PID::Calculate()
                           /// <----- Always put a single blank line at end of file

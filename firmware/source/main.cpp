@@ -15,6 +15,7 @@
 #include "stm32f4xx.h"
 #include "differential_paired_stepper_motors.h"
 #include "gpio.h"
+#include "ir_sensors.h"
 #include "micromouse.h"
 #include "pid.h"
 #include "simplefloodfill.h"

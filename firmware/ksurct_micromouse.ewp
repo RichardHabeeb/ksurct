@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.70.1.5793</state>
+          <state>7.10.1.6733</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -163,7 +163,7 @@
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>29</version>
+        <version>30</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -234,7 +234,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>0000000</state>
+          <state>00000000</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
@@ -406,6 +406,11 @@
         </option>
         <option>
           <name>CCNoLiteralPool</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>CCOptStrategySlave</name>
+          <version>0</version>
           <state>0</state>
         </option>
       </data>
@@ -1105,7 +1110,7 @@
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>29</version>
+        <version>30</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
@@ -1175,7 +1180,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>1111111</state>
+          <state>11111110</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
@@ -1338,6 +1343,11 @@
         </option>
         <option>
           <name>CCNoLiteralPool</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>CCOptStrategySlave</name>
+          <version>0</version>
           <state>0</state>
         </option>
       </data>
@@ -1967,9 +1977,15 @@
           <name>$PROJ_DIR$\source\sensors\include\distance_sensors_interface.h</name>
         </file>
         <file>
+          <name>$PROJ_DIR$\source\sensors\include\ir_sensors.h</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\source\sensors\include\simulated_ir_sensors.h</name>
         </file>
       </group>
+      <file>
+        <name>$PROJ_DIR$\source\sensors\ir_sensors.cpp</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\source\sensors\simulated_ir_sensors.cpp</name>
       </file>
@@ -2032,6 +2048,12 @@
       <name>std_periph_drivers</name>
       <file>
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\misc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_adc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_dma.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_gpio.c</name>

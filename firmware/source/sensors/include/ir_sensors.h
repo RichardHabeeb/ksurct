@@ -1,7 +1,7 @@
 /****************************************************************************************
-* File: ir_sensor.h
+* File: ir_sensors.h
 *
-* Description: Header file for ir_sensor.cpp
+* Description: Header file for ir_sensors.cpp
 *
 * Created: 3/29/2014, by Matthew Olson
 ****************************************************************************************/
@@ -50,15 +50,15 @@
 *--------------------------------------------------------------------------------------*/
 
 /******************************************************************************
-* Class: ir_sensor
+* Class: IRSensors
 *
 * Description: Controller for an inferred distance sensor.
 ******************************************************************************/
-class ir_sensor : public IDistanceSensors
+class IRSensors : public IDistanceSensors
 {
 public: // methods
 
-    ir_sensor();
+    IRSensors();
 
     // Returns the distance measured by the sensor indicated in centimeters
     float ReadDistance
@@ -103,7 +103,7 @@ private: // fields
     uint32_t emiter_pins;
     GPIO_TypeDef* emiter_gpio;
 
-}; // ir_sensor
+}; // IRSensors
 
 //TODO: Temp make callback public so it can be reference untill we get timer_interrupt_oc support
 void TimmerCallback( void );

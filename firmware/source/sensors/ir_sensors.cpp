@@ -1,7 +1,7 @@
 /****************************************************************************************
-* File: ir_sensor.cpp
+* File: ir_sensors.cpp
 *
-* Description: Implementation of ir_sensor class that provides functionality for inferred
+* Description: Implementation of IRSensors class that provides functionality for inferred
 *              sensors.
 *
 * Created: 3/29/2014, by Matthew Olson
@@ -45,7 +45,7 @@
 //static TimerInterruptOC timer(TIM?, TIM?_IRQn, RCC_APB1Periph_TIM?, (SystemCoreClock/4), 50000);
 
 // References to all ir classes that have been instantiated for interupt callbacks
-static ir_sensor* all_irs[MAX_CALLBACK_SENSORS];
+static IRSensors* all_irs[MAX_CALLBACK_SENSORS];
 
  // Count of all instances of ir_sensors
 static uint8_t ir_count = 0;
@@ -54,16 +54,16 @@ static uint8_t ir_count = 0;
 *                                     PROCEDURES
 *--------------------------------------------------------------------------------------*/
 
-static void SetInteruptCallback( ir_sensor* );
+static void SetInteruptCallback( IRSensors* );
 //static void TimmerCallback( void );
 
 /*****************************************************************************
-* Function: ir_sensor - Constructor
+* Function: IRSensors - Constructor
 *
-* Description: Initializes fields for new instance of ir_sensor object, sets up
+* Description: Initializes fields for new instance of IRSensors object, sets up
 *              ADC with DMA for the sensors.
 *****************************************************************************/
-ir_sensor::ir_sensor()
+IRSensors::IRSensors()
 {
     emiter_gpio = IR_EMITER_GPIO;
     emiter_pins = IR_EMITER_PINS;
@@ -72,7 +72,7 @@ ir_sensor::ir_sensor()
     memset( this->ambiant_light, 0, number_of_sensors * sizeof( *ambiant_light ) );
     memset( this->rolling_average, 0, number_of_sensors * sizeof( *rolling_average ) );
 
-} // ir_sensor()
+} // IRSensors()
 
 
 /*****************************************************************************
@@ -80,7 +80,7 @@ ir_sensor::ir_sensor()
 *
 * Description: Initializes hardware for ADC, DMA, and interupts
 *****************************************************************************/
-void ir_sensor::Init( void )
+void IRSensors::Init( void )
 {
     // Enable clocks
     RCC_AHB1PeriphClockCmd( IR_EMITER_AHBPERIPH_GPIO, ENABLE );
@@ -124,7 +124,7 @@ void ir_sensor::Init( void )
 *
 * Description: Reads the distance measured by the sensor indicated in cm
 *****************************************************************************/
-float ir_sensor::ReadDistance( sensor_id_t index )
+float IRSensors::ReadDistance( sensor_id_t index )
 {
     //MTO - not sure why but array is backwords....
     return( rolling_average[ number_of_sensors - 1 - index ] * ACD_TO_CM );
@@ -138,7 +138,7 @@ float ir_sensor::ReadDistance( sensor_id_t index )
 * Description: Starts the ADC read and turns on the emiter_pins every other
 *               read
 *****************************************************************************/
-void ir_sensor::StartRead( void )
+void IRSensors::StartRead( void )
 {
     // When data is acumulated reading_dist is toggled
     if( reading_dist )
@@ -165,7 +165,7 @@ void ir_sensor::StartRead( void )
 *              and turns off the emiters if it is trying to read a distance.
 *              If it is not, it reads the ambiant light present.
 *****************************************************************************/
-void ir_sensor::AcumulateData( void )
+void IRSensors::AcumulateData( void )
 {
     for( int i = 0; i<number_of_sensors; i++ )
     {
@@ -188,7 +188,7 @@ void ir_sensor::AcumulateData( void )
 *
 * Description: Initializes the DMA for use with the ADC
 *****************************************************************************/
-void ir_sensor::InitDMA()
+void IRSensors::InitDMA()
 {
     DMA_InitTypeDef 	DMA_InitStructure;
 
@@ -222,7 +222,7 @@ void ir_sensor::InitDMA()
 *
 * Description: Initializes the ADC hardware
 *****************************************************************************/
-void ir_sensor::InitADC( void )
+void IRSensors::InitADC( void )
 {
     ADC_InitTypeDef       ADC_InitStructure;
 
@@ -275,7 +275,7 @@ void ir_sensor::InitADC( void )
 *
 * Description: Initializes the interrupts for both ADC and DMA
 *****************************************************************************/
-void ir_sensor::InitInterrupts( void )
+void IRSensors::InitInterrupts( void )
 {
     NVIC_InitTypeDef NVIC_InitStructure;
 
@@ -303,7 +303,7 @@ void ir_sensor::InitInterrupts( void )
 *             NOTE: This will set up internal interupt callback when
 *                   timer_interrupt_oc increases support
 *****************************************************************************/
-static void SetInteruptCallback( ir_sensor* sensor )
+static void SetInteruptCallback( IRSensors* sensor )
 {
     if( ir_count >= MAX_CALLBACK_SENSORS ) return;
     // timer.InitChannel( oc_channel_1, 1000, TimmerCallback ); NEED timer_interrupt_oc support for more channels

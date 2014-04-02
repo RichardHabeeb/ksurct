@@ -14,6 +14,7 @@
 *--------------------------------------------------------------------------------------*/
 
 #include "gpio.h"
+#include "paired_motors_interface.h"
 #include "stm32f4xx.h"
 
 /*---------------------------------------------------------------------------------------
@@ -23,22 +24,6 @@
 /*---------------------------------------------------------------------------------------
 *                                        TYPES
 *--------------------------------------------------------------------------------------*/
-
-// Motor direction type.
-typedef int8_t motor_direction_t;
-enum
-{
-    drive_backward,
-    drive_forward
-};
-
-// Motor turn direction type.
-typedef int8_t motor_turn_t;
-enum
-{
-    turn_right,
-    turn_left
-};
 
 // Acceleration function pointer type
 typedef void (*accelerator_t)(int32_t acceleration);

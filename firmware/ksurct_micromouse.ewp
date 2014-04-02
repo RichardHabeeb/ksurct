@@ -1946,14 +1946,29 @@
       <group>
         <name>include</name>
         <file>
-          <name>$PROJ_DIR$\source\motors\include\differential_paired_stepper_motors.h</name>
+          <name>$PROJ_DIR$\source\motors\include\dc_brushed_motor.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\motors\include\paired_dc_brushed_motors.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\motors\include\paired_motors_interface.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\motors\include\paired_stepper_motors.h</name>
         </file>
         <file>
           <name>$PROJ_DIR$\source\motors\include\stepper_motor.h</name>
         </file>
       </group>
       <file>
-        <name>$PROJ_DIR$\source\motors\differential_paired_stepper_motors.cpp</name>
+        <name>$PROJ_DIR$\source\motors\dc_brushed_motor.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\motors\paired_dc_brushed_motors.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\motors\paired_stepper_motors.cpp</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\motors\stepper_motor.cpp</name>
@@ -2010,6 +2025,12 @@
         <name>$PROJ_DIR$\source\utility\gpio.cpp</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\source\utility\output_pwm_timer.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\utility\include\output_pwm_timer.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\source\utility\system_timer.cpp</name>
       </file>
       <file>
@@ -2046,10 +2067,16 @@
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_dma.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_exti.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_gpio.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_rcc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_syscfg.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_tim.c</name>

@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 
-#include "differential_paired_stepper_motors.h"
+#include "paired_stepper_motors.h"
 #include "distance_sensors_interface.h"
 #include "frame_of_references.h"
 #include "ipathfinder.h"
@@ -73,13 +73,13 @@ public: // methods
     // Constructor
     Micromouse
         (
-            Maze                            & maze,                 // Maze to solve.
-            IPathFinder                     & path_finder,          // Used to find center of maze.
-            IDistanceSensors                & sensors,              // Sensors to find distance to walls.
-            DifferentialPairedStepperMotors & motors,               // Differential motor driver reference.
-            PID                             & centering_controller, // Controller for staying in middle of cell.
-            wall_threshold_t          const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
-            float                             travelling_speed      // Speed to move through maze (centimeters / second)
+            Maze                    & maze,                 // Maze to solve.
+            IPathFinder             & path_finder,          // Used to find center of maze.
+            IDistanceSensors        & sensors,              // Sensors to find distance to walls.
+            IPairedMotors           & motors,               // Differential paired motor driver reference.
+            PID                     & centering_controller, // Controller for staying in middle of cell.
+            wall_threshold_t  const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
+            float                     travelling_speed      // Speed to move through maze (centimeters / second)
         );
 
     // Attempts to find the middle of the maze.  Returns true if successful.
@@ -201,7 +201,7 @@ private: // fields
     IDistanceSensors & sensors;
 
     // Reference to motors that share the same axis of rotation. (Side by side)
-    DifferentialPairedStepperMotors & motors;
+    IPairedMotors & motors;
 
     // Maximum distances from center of cell for a wall to be detected.
     wall_threshold_t thresholds;

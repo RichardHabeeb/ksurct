@@ -51,13 +51,13 @@ const float maze_evaluate_checkpoint_offset_distance = 5.5f;
 *****************************************************************************/
 Micromouse::Micromouse
     (
-        Maze                            & maze,                 // Maze to solve.
-        IPathFinder                     & path_finder,          // Used to find center of maze.
-        IDistanceSensors                & sensors,              // Sensors to find distance to walls.
-        DifferentialPairedStepperMotors & motors,               // Differential motor driver reference.
-        PID                             & centering_controller, // Controller for staying in middle of cell.
-        wall_threshold_t          const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
-        float                             travelling_speed      // Speed to move through maze (centimeters / second)
+        Maze                    & maze,                 // Maze to solve.
+        IPathFinder             & path_finder,          // Used to find center of maze.
+        IDistanceSensors        & sensors,              // Sensors to find distance to walls.
+        IPairedMotors           & motors,               // Differential paired motor driver reference.
+        PID                     & centering_controller, // Controller for staying in middle of cell.
+        wall_threshold_t  const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
+        float                     travelling_speed      // Speed to move through maze (centimeters / second)
     ) :
     maze(maze),
     path_finder(path_finder),
@@ -584,16 +584,18 @@ void Micromouse::Turn
 
     float forward_angle_in_degrees = forward_angle * degrees_per_radian;
 
+    // TODO make turn speed a class field.
+
     switch (direction_to_turn)
     {
         case right:
-            motors.Turn(turn_right, 90.f - forward_angle_in_degrees);
+            motors.ZeroPointTurn(turn_right, 90.f - forward_angle_in_degrees, 30.f);
             break;
         case left:
-            motors.Turn(turn_left, 90.f + forward_angle_in_degrees);
+            motors.ZeroPointTurn(turn_left, 90.f + forward_angle_in_degrees, 30.f);
             break;
         case backward:
-            motors.Turn(turn_left, 180.f + forward_angle_in_degrees); // Turn around.
+            motors.ZeroPointTurn(turn_left, 180.f + forward_angle_in_degrees, 30.f);
             break;
     }
 

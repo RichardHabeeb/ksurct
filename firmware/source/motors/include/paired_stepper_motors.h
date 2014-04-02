@@ -1,18 +1,19 @@
 /****************************************************************************************
-* File: differential_paired_stepper_motors.h
+* File: paired_stepper_motors.h
 *
-* Description: Header file for differential_paired_stepper_motors.cpp
+* Description: Header file for paired_stepper_motors.cpp
 *
 * Created: 1/13/2014, by Kyle McGahee
 ****************************************************************************************/
 
-#ifndef DIFFERENTIAL_PAIRED_STEPPER_MOTORS_INCLUDED_H
-#define DIFFERENTIAL_PAIRED_STEPPER_MOTORS_INCLUDED_H
+#ifndef PAIRED_STEPPER_MOTORS_INCLUDED_H
+#define PAIRED_STEPPER_MOTORS_INCLUDED_H
 
 /*---------------------------------------------------------------------------------------
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
 
+#include "paired_motors_interface.h"
 #include "stm32f4xx.h"
 #include "stepper_motor.h"
 
@@ -29,16 +30,16 @@
 *--------------------------------------------------------------------------------------*/
 
 /******************************************************************************
-* Class: DifferentialPairedStepperMotors
+* Class: PairedStepperMotors
 *
 * Description: Put class description here.
 ******************************************************************************/
-class DifferentialPairedStepperMotors
+class PairedStepperMotors : public IPairedMotors
 {
 public: // methods
 
     // Constructor
-    DifferentialPairedStepperMotors
+    PairedStepperMotors
         (
             bool    acceleration_enabled,      // If true then motors will accelerate.
             float   turn_speed,                // Degrees per second
@@ -81,10 +82,11 @@ public: // methods
 
     // Turn the robot the correct 'angle' in degrees in the direction specified using a
     // zero point turn approach.
-    void Turn
+    void ZeroPointTurn
         (
-            motor_direction_t new_direction, // Which direction to turn.
-            float             turn_angle     // Degrees
+            motor_turn_t  new_direction,  // Which direction to turn.
+            float         turn_angle,     // How far to turn in degrees
+            float         turn_speed      // How fast to turn in degrees per second.
         );
 
     // Commands both motors to stop and will wait until they are.
@@ -93,7 +95,7 @@ public: // methods
     // Returns true only if both motors are stopped.
     bool inline Stopped(void);
 
-    // Getters
+    // Getters (all distances in centimeters)
     float get_right_motor_current_distance(void);
     float get_left_motor_current_distance(void);
     float get_right_motor_total_distance(void);
@@ -139,12 +141,6 @@ private: // fields
     // How many steps/sec to increment every acceleration ISR.
     float velocity_update_inc;
 
-    // How many centimeters (arclength) robot will travel for each degree rotated.
-    float cm_per_degree_zero_point;
+}; // PairedStepperMotors
 
-    // Speed needed for turns in units of full steps / second.
-    uint32_t turn_speed_full_steps_per_sec;
-
-}; // DifferentialPairedStepperMotors
-
-#endif // DIFFERENTIAL_PAIRED_STEPPER_MOTORS_INCLUDED_H
+#endif // PAIRED_STEPPER_MOTORS_INCLUDED_H

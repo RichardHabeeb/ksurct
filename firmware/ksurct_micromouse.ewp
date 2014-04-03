@@ -99,7 +99,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>STM32F407VG	ST STM32F407VG</state>
+          <state>STM32F405RG	ST STM32F405RG</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>

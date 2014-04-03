@@ -472,8 +472,9 @@ static void SetSysClock(void)
 /******************************************************************************/
 /*            PLL (clocked by HSE) used as System clock source                */
 /******************************************************************************/
-  __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
+  __IO uint32_t StartUpCounter = 0, HSEStatus = 1;
 
+#if 0
   /* Enable HSE */
   RCC->CR |= ((uint32_t)RCC_CR_HSEON);
 
@@ -492,8 +493,8 @@ static void SetSysClock(void)
   {
     HSEStatus = (uint32_t)0x00;
   }
-
-  if (HSEStatus == (uint32_t)0x01)
+#endif
+  if (true) //(HSEStatus == (uint32_t)0x01)
   {
     /* Select regulator voltage output Scale 1 mode */
     RCC->APB1ENR |= RCC_APB1ENR_PWREN;
@@ -520,7 +521,7 @@ static void SetSysClock(void)
 
     /* Configure the main PLL */
     RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) -1) << 16) |
-                   (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
+                   (RCC_PLLCFGR_PLLSRC_HSI) | (PLL_Q << 24);
 
     /* Enable the main PLL */
     RCC->CR |= RCC_CR_PLLON;

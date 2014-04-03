@@ -23,23 +23,44 @@
 *                                      CONSTANTS
 *--------------------------------------------------------------------------------------*/
 
-// Pin Definitions
-#define IR_EMITER_GPIO                  GPIOC
-#define IR_EMITER_PINS                  GPIO_Pin_0
-#define IR_EMITER_AHBPERIPH_GPIO        RCC_AHB1Periph_GPIOC
+// Pin Definitions for front Power Lion
+#define IR_EMITER_GPIO                  GPIOB
+#define IR_EMITER_PINS                ( GPIO_Pin_11     \
+                                      | GPIO_Pin_12     \
+                                      | GPIO_Pin_13     \
+                                      | GPIO_Pin_14     \
+                                      | GPIO_Pin_15 )
 
-#define IR_COLLECTOR_GPIO               GPIOA
-#define IR_COLLECTOR_PINS               GPIO_Pin_1
-#define IR_COLLECTOR_AHBPERIPH_GPIO     RCC_AHB1Periph_GPIOA
+#define IR_EMITER_AHBPERIPH_GPIO        RCC_AHB1Periph_GPIOB
+
+
+#define IR_COLLECTOR2_GPIO               GPIOC
+#define IR_COLLECTOR2_PINS               GPIO_Pin_4
+#define IR_COLLECTOR2_AHBPERIPH_GPIO     RCC_AHB1Periph_GPIOC
+
+#define IR_COLLECTOR1_GPIO               GPIOA
+#define IR_COLLECTOR1_PINS             ( GPIO_Pin_7     \
+                                       | GPIO_Pin_6     \
+                                       | GPIO_Pin_5     \
+                                       | GPIO_Pin_4 )
+#define IR_COLLECTOR1_AHBPERIPH_GPIO     RCC_AHB1Periph_GPIOA
+
 
 // If ADC changes, change DMA stream/channel
 #define IR_ADC_APB                      RCC_APB2Periph_ADC1
 #define IR_ADC                          ADC1
 
 // Set up these channels to match order of sensors enum
-#define IR_CHANNELS		        { ADC_Channel_1,            \
-                                  ADC_Channel_2,            \
-                                  ADC_Channel_3             }
+#define IR_CHANNELS		        { ADC_Channel_14,       \
+                                  ADC_Channel_6,        \
+                                  ADC_Channel_4 }
+//MTO Only reading sensors for left front and right
+//  save setup for all sensors
+                              // {ADC_Channel_14,        \
+                                  ADC_Channel_7,         \
+                                  ADC_Channel_6,         \
+                                  ADC_Channel_5,         \
+                                  ADC_Channel_4 }
 
 /*---------------------------------------------------------------------------------------
 *                                        TYPES

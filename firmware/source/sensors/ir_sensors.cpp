@@ -23,7 +23,7 @@
 *--------------------------------------------------------------------------------------*/
 
 #define ADC_APLHA               1.0f    // APLHA value for rolling average
-#define ACD_TO_CM               1.0f    // TEMP const for changing adc values to cm
+#define ADC_TO_MV               ( 1000 * 3.3f / 0x0FFF ) // Scale from 12 bit ADC value to mv
 #define MAX_CALLBACK_SENSORS    1       // Only supporting one instance currently for ease
                                         // Pin and ADC/DMA definitions in header must be
                                         // reworked to have multiple instances
@@ -83,7 +83,8 @@ void IRSensors::Init( void )
 {
     // Enable clocks
     RCC_AHB1PeriphClockCmd( IR_EMITER_AHBPERIPH_GPIO, ENABLE );
-    RCC_AHB1PeriphClockCmd( IR_COLLECTOR_AHBPERIPH_GPIO, ENABLE );
+    RCC_AHB1PeriphClockCmd( IR_COLLECTOR1_AHBPERIPH_GPIO, ENABLE );
+    RCC_AHB1PeriphClockCmd( IR_COLLECTOR2_AHBPERIPH_GPIO, ENABLE );
     RCC_APB2PeriphClockCmd( IR_ADC_APB, ENABLE );
     RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_DMA2, ENABLE );
 
@@ -99,17 +100,24 @@ void IRSensors::Init( void )
     GPIO_Init(IR_EMITER_GPIO, &GPIO_InitStructure);
 
     // Set up collector IO
-    GPIO_InitStructure.GPIO_Pin     = IR_COLLECTOR_PINS;
+    GPIO_InitStructure.GPIO_Pin     = IR_COLLECTOR1_PINS;
     GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
     GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
     GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-    GPIO_Init(IR_COLLECTOR_GPIO, &GPIO_InitStructure);
+    GPIO_Init(IR_COLLECTOR1_GPIO, &GPIO_InitStructure);
+
+    // Set up collector IO
+    GPIO_InitStructure.GPIO_Pin     = IR_COLLECTOR2_PINS;
+    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
+    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+    GPIO_Init(IR_COLLECTOR2_GPIO, &GPIO_InitStructure);
 
     InitDMA();
     InitADC();
 
     // Wait some time for stuff to get started before starting interupts
-    for( int i = 0; i < 10000; i++ )
+    for( int i = 0; i < 1000; i++ )
     {
         asm( "nop" );
     }
@@ -125,8 +133,9 @@ void IRSensors::Init( void )
 *****************************************************************************/
 float IRSensors::ReadDistance( sensor_id_t index )
 {
-    //MTO - not sure why but array is backwords....
-    return( rolling_average[ number_of_sensors - 1 - index ] * ACD_TO_CM );
+    float inv_x = 1.0f /(rolling_average[ index ] * ADC_TO_MV);
+
+    return( -269032.0f * inv_x * inv_x + 4556.5 * inv_x + 0.9883 );
 
 } // ReadDistance
 
@@ -198,8 +207,8 @@ void IRSensors::InitDMA()
     DMA_InitStructure.DMA_BufferSize          =	number_of_sensors;
     DMA_InitStructure.DMA_PeripheralInc       =	DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc           =	DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize  =	DMA_PeripheralDataSize_Word;
-    DMA_InitStructure.DMA_MemoryDataSize      =	DMA_MemoryDataSize_Word;
+    DMA_InitStructure.DMA_PeripheralDataSize  =	DMA_PeripheralDataSize_HalfWord;
+    DMA_InitStructure.DMA_MemoryDataSize      =	DMA_MemoryDataSize_HalfWord;
     DMA_InitStructure.DMA_Mode                =	DMA_Mode_Circular;
     DMA_InitStructure.DMA_Priority            =	DMA_Priority_High;
     DMA_InitStructure.DMA_FIFOMode            =	DMA_FIFOMode_Disable;
@@ -229,20 +238,20 @@ void IRSensors::InitADC( void )
 
     /* Enable clocks ****************************************/
     ADC_CommonInitTypeDef ADC_Common_InitStructure;
-    ADC_Common_InitStructure.ADC_Mode = ADC_Mode_Independent;
-    ADC_Common_InitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
-    ADC_Common_InitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
-    ADC_Common_InitStructure.ADC_Prescaler = ADC_Prescaler_Div8;
+    ADC_Common_InitStructure.ADC_Mode               = ADC_Mode_Independent;
+    ADC_Common_InitStructure.ADC_TwoSamplingDelay   = ADC_TwoSamplingDelay_5Cycles;
+    ADC_Common_InitStructure.ADC_DMAAccessMode      = ADC_DMAAccessMode_Disabled;
+    ADC_Common_InitStructure.ADC_Prescaler          = ADC_Prescaler_Div8;
     ADC_CommonInit( &ADC_Common_InitStructure );
 
     /* ADC Init **************************************************************/
-    ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
-    ADC_InitStructure.ADC_ScanConvMode = ENABLE;
-    ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
-    ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
-    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;
-    ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-    ADC_InitStructure.ADC_NbrOfConversion = number_of_sensors;
+    ADC_InitStructure.ADC_Resolution                = ADC_Resolution_12b;
+    ADC_InitStructure.ADC_ScanConvMode              = ENABLE;
+    ADC_InitStructure.ADC_ContinuousConvMode        = DISABLE;
+    ADC_InitStructure.ADC_ExternalTrigConvEdge      = ADC_ExternalTrigConvEdge_None;
+    ADC_InitStructure.ADC_ExternalTrigConv          = ADC_ExternalTrigConv_T1_CC1;
+    ADC_InitStructure.ADC_DataAlign                 = ADC_DataAlign_Right;
+    ADC_InitStructure.ADC_NbrOfConversion           = number_of_sensors;
 
     ADC_Init(IR_ADC, &ADC_InitStructure);
 

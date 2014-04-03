@@ -58,7 +58,7 @@ class IRSensors : public IDistanceSensors
 {
 public: // methods
 
-    IRSensors();
+    IRSensors(void);
 
     // Returns the distance measured by the sensor indicated in centimeters
     float ReadDistance
@@ -104,8 +104,5 @@ private: // fields
     GPIO_TypeDef* emiter_gpio;
 
 }; // IRSensors
-
-//TODO: Temp make callback public so it can be reference untill we get timer_interrupt_oc support
-void TimmerCallback( void );
 
 #endif // IR_INCLUDED_H

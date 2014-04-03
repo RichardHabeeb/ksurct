@@ -40,9 +40,8 @@
 *                                      VARIABLES
 *--------------------------------------------------------------------------------------*/
 
-//TODO: Need support for more TIM because motors have taken all the channels for TIM3
 // Instantiate output compare timer to step the motors (still need to be initialized)
-//static TimerInterruptOC timer(TIM?, TIM?_IRQn, RCC_APB1Periph_TIM?, (SystemCoreClock/4), 50000);
+static TimerInterruptOC timer(TIM4, TIM4_IRQn, RCC_APB1Periph_TIM4, (SystemCoreClock/4), 50000);
 
 // References to all ir classes that have been instantiated for interupt callbacks
 static IRSensors* all_irs[MAX_CALLBACK_SENSORS];
@@ -54,8 +53,8 @@ static uint8_t ir_count = 0;
 *                                     PROCEDURES
 *--------------------------------------------------------------------------------------*/
 
-static void SetInteruptCallback( IRSensors* );
-//static void TimmerCallback( void );
+static void SetInterruptCallback( IRSensors* );
+static void TimerCallback( void );
 
 /*****************************************************************************
 * Function: IRSensors - Constructor
@@ -115,7 +114,7 @@ void IRSensors::Init( void )
         asm( "nop" );
     }
 
-    SetInteruptCallback( this );
+    SetInterruptCallback( this );
 
 } // Init()
 
@@ -296,25 +295,26 @@ void IRSensors::InitInterrupts( void )
 
 
 /*****************************************************************************
-* Function: SetInteruptCallback
+* Function: SetInterruptCallback
 *
 * Description: Saves a reference to the instance of the passed in class so
 *              that it can be called in the interupt
 *             NOTE: This will set up internal interupt callback when
 *                   timer_interrupt_oc increases support
 *****************************************************************************/
-static void SetInteruptCallback( IRSensors* sensor )
+static void SetInterruptCallback( IRSensors* sensor )
 {
-    if( ir_count >= MAX_CALLBACK_SENSORS ) return;
-    // timer.InitChannel( oc_channel_1, 1000, TimmerCallback ); NEED timer_interrupt_oc support for more channels
+    if( ir_count >= MAX_CALLBACK_SENSORS ) { return; }
+
+    timer.InitChannel( oc_channel_1, 200, TimerCallback );
     all_irs[ ir_count ] = sensor;
     ir_count++;
 
-} // SetInteruptCallback()
+} // SetInterruptCallback()
 
 
 /*****************************************************************************
-* Function: TimmerCallback
+* Function: TimerCallback
 *
 * Description: Callback for the timmer interupt, this starts reading distances
 *              for each instance of ir sensors
@@ -323,14 +323,14 @@ static void SetInteruptCallback( IRSensors* sensor )
 *                   up by motors class, need support for more TIM ohannels to work.
 *                   For now call this from a timmer interupt
 *****************************************************************************/
-void TimmerCallback()
+static void TimerCallback(void)
 {
     for( int i = 0; i < ir_count; i++ )
     {
         all_irs[i]->StartRead();
     }
 
-} // TimmerCallback()
+} // TimerCallback()
 
 
 /*****************************************************************************

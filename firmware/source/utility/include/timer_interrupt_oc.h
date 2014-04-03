@@ -60,10 +60,10 @@ public: // methods
     // Constructor
     TimerInterruptOC
         (
-            TIM_TypeDef * timer, // TIMx associated with channel.  Will be initialized inside class.
-            IRQn          timer_irq_number, // Needed to setup timer interrupt.
-            uint32_t      timer_clock,  // RCC_APB1Periph_TIMx
-            uint32_t      timer_clock_freq, // Base frequency of timer clock.
+            TIM_TypeDef * timer,              // TIMx associated with channel.  Will be initialized inside class.
+            IRQn          timer_irq_number,   // Needed to setup timer interrupt.
+            uint32_t      timer_clock,        // RCC_APB1Periph_TIMx
+            uint32_t      timer_clock_freq,   // Base frequency of timer clock.
             uint32_t      timer_clock_counter // Scaled down frequency of timer clock.
         );
 
@@ -83,6 +83,7 @@ public: // methods
 public: // fields
 
     static oc_channel_info_t tim3[number_oc_channels];
+    static oc_channel_info_t tim4[number_oc_channels];
 
 private: // methods
 

@@ -2040,6 +2040,9 @@
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\misc.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_adc.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\stm32f4xx\std_periph_drivers\stm32f4xx_dma.c</name>
       </file>
       <file>

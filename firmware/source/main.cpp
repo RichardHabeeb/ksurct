@@ -88,13 +88,15 @@ int main(void)
     wall_thresholds.front = (maze->get_cell_length() / 2.f) + 5.f;
     wall_thresholds.side  = (maze->get_cell_length() / 2.f) + 5.f;
 
-    static SimulatedIRSensors ir_sensors;
+    //static SimulatedIRSensors ir_sensors;
+    static IRSensors ir_sensors;
+    ir_sensors.Init();
 
     static Micromouse micromouse(*maze, simple_flood_fill, ir_sensors, motors, centering_controller, wall_thresholds, 18.f);
 
     // Just do this if using simulated ir sensors so it knows what distances to return.
-    ir_sensors.set_maze(*maze);
-    ir_sensors.set_micromouse(micromouse);
+    //ir_sensors.set_maze(*maze);
+    //ir_sensors.set_micromouse(micromouse);
 
     motors.Initialize();
 

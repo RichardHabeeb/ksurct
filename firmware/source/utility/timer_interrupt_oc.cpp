@@ -34,6 +34,7 @@
 
 oc_channel_info_t TimerInterruptOC::tim3[number_oc_channels];
 oc_channel_info_t TimerInterruptOC::tim4[number_oc_channels];
+oc_channel_info_t TimerInterruptOC::tim5[number_oc_channels];
 
 /*---------------------------------------------------------------------------------------
 *                                    CLASS METHODS
@@ -126,6 +127,10 @@ void TimerInterruptOC::InitChannel
     {
         tim4[channel].callback = callback;
     }
+    else if (this->timer == TIM5)
+    {
+        tim5[channel].callback = callback;
+    }
 
     SetChannelFrequency(channel, frequency);
 
@@ -152,6 +157,10 @@ void TimerInterruptOC::SetChannelFrequency
     else if (this->timer == TIM4)
     {
         channel_info = &TimerInterruptOC::tim4[channel];
+    }
+    else if (this->timer == TIM5)
+    {
+        channel_info = &TimerInterruptOC::tim5[channel];
     }
 
     if (new_frequency <= 0.0f)
@@ -350,3 +359,52 @@ extern "C" void TIM4_IRQHandler(void)
     }
 
 } // TIM4_IRQHandler()
+
+/*****************************************************************************
+* Function: TIM5_IRQHandler
+*
+* Description:
+*****************************************************************************/
+extern "C" void TIM5_IRQHandler(void)
+{
+    uint32_t capture = 0;
+
+    oc_channel_info_t * channel = NULL;
+
+    if (TIM_GetITStatus(TIM5, TIM_IT_CC1) != RESET)
+    {
+        channel = &TimerInterruptOC::tim5[oc_channel_1];
+        TIM5->SR = (uint16_t)~TIM_IT_CC1; // Clear the interrupt pending bit
+        capture = TIM5->CCR1; // Get the capture 1 register value
+        TIM5->CCR1 = capture + channel->capture_compare_value; // Set the capture compare 1 register value
+        channel->callback();
+    }
+
+    if (TIM_GetITStatus(TIM5, TIM_IT_CC2) != RESET)
+    {
+        channel = &TimerInterruptOC::tim5[oc_channel_2];
+        TIM5->SR = (uint16_t)~TIM_IT_CC2; // Clear the interrupt pending bit
+        capture = TIM5->CCR2; // Get the capture 2 register value
+        TIM5->CCR2 = capture + channel->capture_compare_value; // Set the capture compare 2 register value
+        channel->callback();
+    }
+
+    if (TIM_GetITStatus(TIM5, TIM_IT_CC3) != RESET)
+    {
+        channel = &TimerInterruptOC::tim5[oc_channel_3];
+        TIM5->SR = (uint16_t)~TIM_IT_CC3; // Clear the interrupt pending bit
+        capture = TIM5->CCR3; // Get the capture 3 register value
+        TIM5->CCR3 = capture + channel->capture_compare_value; // Set the capture compare 3 register value
+        channel->callback();
+    }
+
+    if (TIM_GetITStatus(TIM5, TIM_IT_CC4) != RESET)
+    {
+        channel = &TimerInterruptOC::tim5[oc_channel_4];
+        TIM5->SR = (uint16_t)~TIM_IT_CC4; // Clear the interrupt pending bit
+        capture = TIM5->CCR4; // Get the capture 4 register value
+        TIM5->CCR4 = capture + channel->capture_compare_value; // Set the capture compare 4 register value
+        channel->callback();
+    }
+
+} // TIM5_IRQHandler()

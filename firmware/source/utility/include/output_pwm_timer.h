@@ -69,8 +69,8 @@ public: // methods
     // Set what percentage of the pulse is high.
     void SetChannelDutyCycle
         (
-            pwm_channel_t channel,      // Channel to update.
-            float         new_duy_cycle // Range 0 to 1 (equates to 0% - 100%)
+            pwm_channel_t channel,       // Channel to update.
+            float         new_duty_cycle // Range 0 to 1 (equates to 0% - 100%)
         );
 
     // Set how long (in microseconds) the pulse is high.

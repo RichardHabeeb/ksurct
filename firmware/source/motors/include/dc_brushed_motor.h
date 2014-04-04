@@ -16,7 +16,7 @@
 #include <stdint.h>
 
 #include "gpio.h"
-#include "paired_motors_interface.h"
+#include "motor_interface.h"
 #include "output_pwm_timer.h"
 
 /*---------------------------------------------------------------------------------------
@@ -31,31 +31,47 @@
 *                                       CLASSES
 *--------------------------------------------------------------------------------------*/
 
-class DCBrushedMotor
+/******************************************************************************
+* Class: DCBrushedMotor
+*
+* Description: Represent a single dc brushed motor with encoder feedback.
+******************************************************************************/
+class DCBrushedMotor : public IMotor
 {
 public: // methods
 
     // Constructor
     DCBrushedMotor
         (
-            OutputPWMTimer & pwm_timer,
-            pwm_channel_t    pwm_channel,
-            OutputPin      & direction_pin
+            AlternateFunctionPin & pwm_pin,
+            OutputPin            & direction_pin,
+            OutputPWMTimer       & pwm_timer,
+            pwm_channel_t          pwm_channel,
+            float                  wheel_diameter,                // Centimeters
+            float                  encoder_counts_per_revolution, // How many encoder counts make up one wheel rotation.
+            float                  angular_rate_per_duty          // Degrees / sec for a given % duty cycle.
         );
 
-    // Clears any stateful fields such as all encoder counts, etc and stops motor.
+    // Must be called before using.
+    void Initialize(void);
+
+    // Clears all stateful information and returns to it's original 'initialized' state.
     void ReInitialize(void);
 
-    // Drives motor in either forward or reverse direction at the specified PWM value.
-    // Provided speed should always be positive.
+    // Set motor to drive at specified forward velocity. If velocity is negative then motor will drive in reverse.
     void Drive
         (
-            motor_direction_t new_direction,    // Either forwards or backwards.
-            float             new_pwm_duty_cyle // Should be from 0 (off) to 100 (full speed)
+            float new_velocity // cm / sec
         );
 
-    // Sets direction to either forward or backwards without changing motor speed.
-    inline void SetDirection
+    // Change current commanded velocity by the given amount. Can be either positive or negative.
+    void AddVelocity
+        (
+            float velocity_change // cm / sec
+        );
+
+    // Sets direction to either forward or backwards without changing desired motor speed.
+    void SetDirection
         (
             motor_direction_t new_direction
         );
@@ -66,41 +82,56 @@ public: // methods
     // Returns true if motor is completely stopped.
     bool IsStopped(void);
 
-    // Increase encoder counts by 1. Should be called by ISR.
+    // Increase encoder counts by 1. Should only be called by ISR.
     void IncrementEncoderTicks(void);
 
-    // Getters
-    uint32_t get_current_encoder_counts(void) const { return current_encoder_counts; }
+    // Getters (all distances in centimeters)
+    float get_commanded_velocity(void);
+    float get_current_distance(void) { return current_encoder_counts * cm_per_encoder_tick; }
+    float get_total_distance(void) { return total_encoder_counts * cm_per_encoder_tick; }
 
-    uint64_t get_total_encoder_counts(void) const { return total_encoder_counts; }
-
-    // Setters
-    void set_update_total_encoder_counts(bool update) { update_total_encoder_counts = update; }
-
-    void reset_current_encoder_counts(void) { current_encoder_counts = 0; }
+    // Trivial setters
+    void reset_current_distance(void) { current_encoder_counts = 0; }
+    void reset_total_distance(void) { total_encoder_counts = 0; }
 
 private: // methods
 
-    inline void SetDutyCycle
+    inline void SetSpeed
         (
-            float new_duty_cycle // From 0 (off) to 100 (full speed)
+            float new_speed // Should be positive (cm / sec)
+        );
+
+    float ConvertSpeedToDutyCycle
+        (
+            float speed // Must be positive. (cm / sec)
         );
 
 private: // fields
+
+    AlternateFunctionPin & pwm_pin;
 
     OutputPin & direction_pin;
 
     OutputPWMTimer & pwm_timer;
     pwm_channel_t    pwm_channel;
 
-    // Current output duty % of PWM signal from 0-100.
-    float current_pwm_duty_cyle;
+    float wheel_diameter;      // Centimeters
+    float wheel_circumference; // Centimeters
 
-    // If true then will update total encoder counts every time IC interrupt is called.
-    bool update_total_encoder_counts;
+    float angular_rate_per_duty; // Degrees / sec for a given % duty cycle.
+
+    float encoder_counts_per_revolution; // How many encoder counts make up one wheel rotation.
+
+    float cm_per_encoder_tick; // How many centimeters are travelled each count of the encoder.
+
+    float current_speed; // Current commanded speed in cm/sec.
+
+    bool update_total_encoder_counts; // If true then will update total encoder counts every time IC interrupt is called.
 
     uint64_t total_encoder_counts;   // Number of encoder counts since initialization.
     uint32_t current_encoder_counts; // Number of encoder counts since last counter reset.
+
+    motor_direction_t current_direction; // Direction motor is currently spinning.
 
 }; // DCBrushedMotor
 

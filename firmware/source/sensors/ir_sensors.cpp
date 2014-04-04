@@ -99,11 +99,11 @@ IRSensors::IRSensors
 
 
 /*****************************************************************************
-* Function: Init
+* Function: Initialize
 *
 * Description: Initializes hardware for ADC, DMA, and interupts
 *****************************************************************************/
-void IRSensors::Init( void )
+void IRSensors::Initialize( void )
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
     switch( this_robot )
@@ -157,7 +157,7 @@ void IRSensors::Init( void )
 
     SetInterruptCallback( this );
 
-} // Init()
+} // Initialize()
 
 /*****************************************************************************
 * Function: ReadDistance

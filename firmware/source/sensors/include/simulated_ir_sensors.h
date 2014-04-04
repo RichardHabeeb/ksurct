@@ -48,6 +48,8 @@ public: // methods
             Micromouse const & micromouse // Reference to micromouse.
         );
 
+    void Initialize(void);
+
     // Returns distance to robots center point in centimeters for the given sensor id.
     float ReadDistance
         (

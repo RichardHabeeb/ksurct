@@ -15,11 +15,11 @@
 
 #include <stdint.h>
 
-#include "paired_stepper_motors.h"
 #include "distance_sensors_interface.h"
 #include "frame_of_references.h"
 #include "ipathfinder.h"
 #include "maze.h"
+#include "paired_motors.h"
 #include "pid.h"
 
 /*---------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ public: // methods
             Maze                    & maze,                 // Maze to solve.
             IPathFinder             & path_finder,          // Used to find center of maze.
             IDistanceSensors        & sensors,              // Sensors to find distance to walls.
-            IPairedMotors           & motors,               // Differential paired motor driver reference.
+            PairedMotors            & motors,               // Differential paired motors.
             PID                     & centering_controller, // Controller for staying in middle of cell.
             wall_threshold_t  const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
             float                     travelling_speed      // Speed to move through maze (centimeters / second)
@@ -107,6 +107,10 @@ public: // methods
     float get_y_distance(void) const { return this->net_y_distance; }
     position_t get_position(void) const { return this->current_position; }
     heading_t get_heading(void) const { return this->current_heading; }
+
+    // Allow access to components for testing outside of micromouse logic.
+    PairedMotors & get_motors(void) { return motors; }
+    IDistanceSensors & get_sensors(void) { return sensors; }
 
 private: // methods
 
@@ -201,7 +205,7 @@ private: // fields
     IDistanceSensors & sensors;
 
     // Reference to motors that share the same axis of rotation. (Side by side)
-    IPairedMotors & motors;
+    PairedMotors & motors;
 
     // Maximum distances from center of cell for a wall to be detected.
     wall_threshold_t thresholds;

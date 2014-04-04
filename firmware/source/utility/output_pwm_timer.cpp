@@ -122,8 +122,8 @@ void OutputPWMTimer::InitChannel
 *****************************************************************************/
 void OutputPWMTimer::SetChannelDutyCycle
     (
-        pwm_channel_t channel,
-        float         new_duty_cycle
+        pwm_channel_t channel,       // Channel to update.
+        float         new_duty_cycle // Range 0 to 1 (equates to 0% - 100%)
     )
 {
     uint32_t capture_compare_value = (uint32_t)(new_duty_cycle * timer->ARR);

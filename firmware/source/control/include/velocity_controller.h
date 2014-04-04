@@ -1,17 +1,20 @@
 /****************************************************************************************
-* File: distance_sensors_interface.h
+* File: velocity_controller.h
 *
-* Description: Interface to sensor management class capable of reading in distace values.
+* Description: Header file for velocity_controller.cpp
 *
-* Created: 3/30/2014, by Kyle McGahee
+* Created: 4/20/2014, by Kyle McGahee
 ****************************************************************************************/
 
-#ifndef DISTANCE_SENSORS_INTERFACE_INCLUDED_H
-#define DISTANCE_SENSORS_INTERFACE_INCLUDED_H
+#ifndef VELOCITY_CONTROLLER_INCLUDED_H
+#define VELOCITY_CONTROLLER_INCLUDED_H
 
 /*---------------------------------------------------------------------------------------
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
+
+#include "pid.h"
+#include "motor_interface.h"
 
 /*---------------------------------------------------------------------------------------
 *                                      CONSTANTS
@@ -21,39 +24,38 @@
 *                                        TYPES
 *--------------------------------------------------------------------------------------*/
 
-enum sensor_id_t
-{
-    sensor_id_left,
-    sensor_id_front_nw,
-    sensor_id_front,
-    sensor_id_front_ne,
-    sensor_id_right,
-
-    number_of_sensors
-};
-
 /*---------------------------------------------------------------------------------------
 *                                       CLASSES
 *--------------------------------------------------------------------------------------*/
 
 /******************************************************************************
-* Class: IDistanceSensors
+* Class: VelocityController
 *
-* Description: Interface to sensor management class capable of reading in distace
-*              values in centimeters.
+* Description: Put class description here.
 ******************************************************************************/
-class IDistanceSensors
+class VelocityController
 {
 public: // methods
 
-    virtual void Initialize(void) = 0;
-
-    // Returns distance measurement of specified sensor in centimeters.
-    virtual float ReadDistance
+    // Constructor
+    VelocityController
         (
-            sensor_id_t sensor_id
-        ) = 0;
+            IMotor * motor, // Motor to control.
+            PID    * pid    // PID controller to use to control motor.
+        );
 
-}; // IDistanceSensors
+    // TODO
+    void Run
+        (
+            float delta_time // Change in time since last call.
+        );
 
-#endif // DISTANCE_SENSORS_INTERFACE_INCLUDED_H
+private: // fields
+
+    float    last_distance;
+    IMotor * motor;
+    PID    * velocity_pid;
+
+}; // VelocityController
+
+#endif // VELOCITY_CONTROLLER_INCLUDED_H

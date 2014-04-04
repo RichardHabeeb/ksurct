@@ -312,6 +312,9 @@
           <state>$PROJ_DIR$\source\motors\include</state>
           <state>$PROJ_DIR$\source\sensors\include</state>
           <state>$PROJ_DIR$\source\utility\include</state>
+          <state>$PROJ_DIR$\source\config\include</state>
+          <state>$PROJ_DIR$\source\config\include\config_settings</state>
+          <state>$PROJ_DIR$\source\config\include\config_settings\micromouse_specific_settings</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1879,15 +1882,66 @@
   <group>
     <name>source</name>
     <group>
+      <name>config</name>
+      <group>
+        <name>include</name>
+        <group>
+          <name>config_settings</name>
+          <group>
+            <name>micromouse_specific_settings</name>
+            <file>
+              <name>$PROJ_DIR$\source\config\include\config_settings\micromouse_specific_settings\baby_kitten_settings.h</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\source\config\include\config_settings\micromouse_specific_settings\power_lion_settings.h</name>
+            </file>
+          </group>
+          <file>
+            <name>$PROJ_DIR$\source\config\include\config_settings\config_settings.h</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\source\config\include\config_settings\config_settings_types.h</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\source\config\include\config_settings\default_constant_groups.h</name>
+          </file>
+        </group>
+        <file>
+          <name>$PROJ_DIR$\source\config\include\private_system_config.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\config\include\public_system_config.h</name>
+        </file>
+      </group>
+      <file>
+        <name>$PROJ_DIR$\source\config\config_maze.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\config\config_micromouse.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\config\config_motors.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\config\config_sensors.cpp</name>
+      </file>
+    </group>
+    <group>
       <name>control</name>
       <group>
         <name>include</name>
         <file>
           <name>$PROJ_DIR$\source\control\include\pid.h</name>
         </file>
+        <file>
+          <name>$PROJ_DIR$\source\control\include\velocity_controller.h</name>
+        </file>
       </group>
       <file>
         <name>$PROJ_DIR$\source\control\pid.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\control\velocity_controller.cpp</name>
       </file>
     </group>
     <group>
@@ -1949,13 +2003,13 @@
           <name>$PROJ_DIR$\source\motors\include\dc_brushed_motor.h</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\source\motors\include\paired_dc_brushed_motors.h</name>
+          <name>$PROJ_DIR$\source\motors\include\motor_callbacks.h</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\source\motors\include\paired_motors_interface.h</name>
+          <name>$PROJ_DIR$\source\motors\include\motor_interface.h</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\source\motors\include\paired_stepper_motors.h</name>
+          <name>$PROJ_DIR$\source\motors\include\paired_motors.h</name>
         </file>
         <file>
           <name>$PROJ_DIR$\source\motors\include\stepper_motor.h</name>
@@ -1965,13 +2019,16 @@
         <name>$PROJ_DIR$\source\motors\dc_brushed_motor.cpp</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\source\motors\paired_dc_brushed_motors.cpp</name>
+        <name>$PROJ_DIR$\source\motors\dc_brushed_motor_callbacks.cpp</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\source\motors\paired_stepper_motors.cpp</name>
+        <name>$PROJ_DIR$\source\motors\paired_motors.cpp</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\motors\stepper_motor.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\motors\stepper_motor_callbacks.cpp</name>
       </file>
     </group>
     <group>
@@ -2006,6 +2063,9 @@
           <name>$PROJ_DIR$\source\utility\include\gpio.h</name>
         </file>
         <file>
+          <name>$PROJ_DIR$\source\utility\include\output_pwm_timer.h</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\source\utility\include\queue.h</name>
         </file>
         <file>
@@ -2026,9 +2086,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\utility\output_pwm_timer.cpp</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\source\utility\include\output_pwm_timer.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\utility\system_timer.cpp</name>

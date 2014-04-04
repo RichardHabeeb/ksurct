@@ -84,6 +84,7 @@ public: // fields
 
     static oc_channel_info_t tim3[number_oc_channels];
     static oc_channel_info_t tim4[number_oc_channels];
+    static oc_channel_info_t tim5[number_oc_channels];
 
 private: // methods
 

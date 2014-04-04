@@ -11,6 +11,7 @@
 *--------------------------------------------------------------------------------------*/
 
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 
 #include "micromouse.h"
@@ -54,7 +55,7 @@ Micromouse::Micromouse
         Maze                    & maze,                 // Maze to solve.
         IPathFinder             & path_finder,          // Used to find center of maze.
         IDistanceSensors        & sensors,              // Sensors to find distance to walls.
-        IPairedMotors           & motors,               // Differential paired motor driver reference.
+        PairedMotors            & motors,               // Differential paired motors.
         PID                     & centering_controller, // Controller for staying in middle of cell.
         wall_threshold_t  const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
         float                     travelling_speed      // Speed to move through maze (centimeters / second)
@@ -149,6 +150,8 @@ bool Micromouse::SolveMaze(void)
         TravelForward(distance_to_checkpoint);
 
         current_position = target_cell.position;
+
+        //printf("\n(%d,%d)", current_position.x, current_position.y);
 
         switch (current_checkpoint_type)
         {
@@ -250,10 +253,6 @@ void Micromouse::TravelForward
         float distance_to_travel // In centimeters
     )
 {
-    // Start wheels spinning forward (might already be moving forward)
-    // This will also reset the current distance travelled reported by motors.
-    motors.Drive(travelling_speed);
-
     // Current distance travelled not counting lateral error.
     float forward_distance = 0.f;
 
@@ -264,12 +263,19 @@ void Micromouse::TravelForward
     float last_right_distance = 0.0f;
     float last_left_distance  = 0.0f;
 
+    // Reset current distance so we know how far we've travelled.
+    motors.reset_current_distance();
+
+    // Start wheels spinning forward (might already be moving forward)
+    // This will also reset the current distance travelled reported by motors.
+    motors.Drive(travelling_speed);
+
     while (forward_distance < distance_to_travel)
     {
         this->Center();
 
-        float right_distance = motors.get_right_motor_current_distance();
-        float left_distance  = motors.get_left_motor_current_distance();
+        float right_distance = motors.get_right_motor().get_current_distance();
+        float left_distance  = motors.get_left_motor().get_current_distance();
 
         // Estimate where robot is pointing.  Since this is information is needed elsewhere
         // (such as turning) it is a field. The angle is referenced from 0 radians being in
@@ -450,8 +456,8 @@ void Micromouse::Center(void)
 
         float delta_linear_speed = centering_controller.Calculate(distance_error, delta_time);
 
-        motors.DriveRight(travelling_speed + delta_linear_speed);
-        motors.DriveLeft(travelling_speed - delta_linear_speed);
+        motors.get_right_motor().Drive(travelling_speed + delta_linear_speed);
+        motors.get_left_motor().Drive(travelling_speed - delta_linear_speed);
 
         last_centering_time = current_time;
     }
@@ -503,11 +509,10 @@ float Micromouse::MeasureDistanceToRightWall(void)
 *****************************************************************************/
 void Micromouse::FindNextPathSegment(void)
 {
-    uint32_t cells_to_travel = 1; // Initializing to 1 instead of zero for testing.
+    uint32_t cells_to_travel = 0;
     cardinal_t next_heading = north;
 
     path_finder.FindNextPathSegment(current_position.y, current_position.x, current_heading, &next_heading, &cells_to_travel);
-
     SetupTargetCell(cells_to_travel, next_heading);
 
 } // Micromouse::FindNextPathSegment()

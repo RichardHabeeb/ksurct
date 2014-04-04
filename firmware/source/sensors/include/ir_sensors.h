@@ -69,7 +69,7 @@ public: // methods
     void AcumulateData(void);
 
     // Initializes the hardware for ADC, DMA and the interupts
-    void Init( void );
+    void Initialize( void );
 
     // Initializes the DMA, this is set as public so that if a transoer error
     // occurs it can be reinitialized on the fly

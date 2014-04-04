@@ -56,6 +56,16 @@ SimulatedIRSensors::SimulatedIRSensors
 } // SimulatedIRSensors::SimulatedIRSensors() - Constructor
 
 /*****************************************************************************
+* Function: Initialize
+*
+* Description:
+*****************************************************************************/
+void SimulatedIRSensors::Initialize(void)
+{
+
+} // SimulatedIRSensors::Initialize()
+
+/*****************************************************************************
 * Function: ReadDistance
 *
 * Description: Uses pre-mapped maze to return distance to robots center point

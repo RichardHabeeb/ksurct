@@ -13,18 +13,9 @@
 #include <cstdio>
 
 #include "stm32f4xx.h"
-#include "gpio.h"
-#include "ir_sensors.h"
 #include "micromouse.h"
-#include "paired_dc_brushed_motors.h"
-#include "paired_stepper_motors.h"
-#include "pid.h"
-#include "simplefloodfill.h"
-#include "simulated_ir_sensors.h"
+#include "public_system_config.h"
 #include "system_timer.h"
-#include "test_maze_creator.h"
-#include "timer_interrupt_oc.h"
-#include "weightedpathfinding.h"
 
 /*---------------------------------------------------------------------------------------
 *                                   LITERAL CONSTANTS
@@ -55,67 +46,42 @@ SystemTimer system_timer;
 *****************************************************************************/
 int main(void)
 {
-    uint32_t number_of_rows    = 16;
-    uint32_t number_of_columns = 16;
-    float    cell_length       = 18.0f;
-
-    Maze * maze = new Maze(number_of_rows, number_of_columns, cell_length);
-    //Maze * maze = TestMazeCreator().CreateMaze(number_of_rows, number_of_columns, cell_length);
-    maze->set_starting_cell(0, 0);
-    maze->set_goal_cell(number_of_rows/2, number_of_columns/2);
-
-    if (maze == NULL) { return 1; }
-
-    static SimpleFloodFill simple_flood_fill(maze);
-
-    /*
-    static PairedDCBrushedMotors motors(3.0f,  // Wheel diameter. (centimeters)
-                                        1000,  // How many encoder counts make up one wheel rotation.
-                                        6.0f,  // Wheel to wheel distance (centimeters)
-                                        1.0f); // Degrees / sec for a given % duty cycle.
-    */
-
-    static PairedStepperMotors motors(false, // Acceleration enabled
-                                      180,   // Turn speed (degrees per second)
-                                      6,     // Wheel diameter (centimeters)
-                                      11,    // Wheel base (centimeters)
-                                      200,   // Full steps per revolution
-                                      16);   // Pulses per full steps (for microstepping)
-
-
-    // TODO: Figure out gains / limits
-    static PID centering_controller(0,    // Proportional Gain
-                                    0,    // Integral Gain
-                                    0,    // Derivative Gain
-                                    10,   // Upper Output Saturation Limit
-                                    -10,  // Lower Output Saturation Limit
-                                    5,    // Upper Error Integral Saturation Limit
-                                    -5);  // Lower Error Integral Saturation Limit
-
-
-    wall_threshold_t wall_thresholds;
-    wall_thresholds.front = (maze->get_cell_length() / 2.f) + 5.f;
-    wall_thresholds.side  = (maze->get_cell_length() / 2.f) + 5.f;
-
-    //static SimulatedIRSensors ir_sensors;
-    static IRSensors ir_sensors(POWERLION);
-    ir_sensors.Init();
-
-    static Micromouse micromouse(*maze, simple_flood_fill, ir_sensors, motors, centering_controller, wall_thresholds, 18.f);
-
-    // Just do this if using simulated ir sensors so it knows what distances to return.
-    //ir_sensors.set_maze(*maze);
-    //ir_sensors.set_micromouse(micromouse);
-
-    motors.Initialize();
+    Micromouse * micromouse = configure_micromouse();
 
     system_timer.Initialize(1e6);
 
+    // Motors test.
+//    PairedMotors & motors = micromouse->get_motors();
+//    while (true)
+//    {
+//        for (uint32_t i = 0; i < 1e6; ++i);
+//        motors.Drive(5);
+//        for (uint32_t i = 0; i < 1e6; ++i);
+//        printf("\n\n\n%f", motors.get_left_motor().get_current_distance());
+//        printf("\n%f", motors.get_right_motor().get_current_distance());
+//    }
+
+    // Sensor test.
+//    IDistanceSensors & sensors = micromouse->get_sensors();
+//    while (true)
+//    {
+//        volatile float left        = sensors.ReadDistance(sensor_id_left);
+//        volatile float front_left  = sensors.ReadDistance(sensor_id_front_nw);
+//        volatile float front       = sensors.ReadDistance(sensor_id_front);
+//        volatile float front_right = sensors.ReadDistance(sensor_id_front_ne);
+//        volatile float right       = sensors.ReadDistance(sensor_id_right);
+//        printf("\n\nl:  %f", left);
+//        printf("\nfl: %f", front_left);
+//        printf("\nf:  %f", front);
+//        printf("\nfr: %f", front_right);
+//        printf("\nr:  %f", right);
+//    }
+
     while (true)
     {
-        if (!micromouse.SolveMaze())
+        if (!micromouse->SolveMaze())
         {
-            // assert
+            // :(
         }
     }
 

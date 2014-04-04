@@ -14,8 +14,11 @@
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
 
+#include <cmath>
+
 #include "gpio.h"
 #include "stepper_motor.h"
+#include "util_math.h"
 
 /*---------------------------------------------------------------------------------------
 *                                   LITERAL CONSTANTS
@@ -44,23 +47,46 @@
 ******************************************************************************/
 StepperMotor::StepperMotor
     (
-        OutputPin &   step_pin,
-        OutputPin &   direction_pin,
-        uint8_t       pulses_per_step,            // Ie 2 for half stepping, 16 for 1/16th stepping, etc.
-        bool          acceleration_enabled,       // Whether or not to use acceleration logic.
-        float         acceleration_time_constant, // How long to accelerate to target speed. (seconds)
-        float         velocity_update_inc,        // How many full steps to update by when accelerating.
-        accelerator_t accel_function_pointer      // Acceleration callback function used to change ISR frequency.
+        OutputPin     & step_pin,
+        OutputPin     & direction_pin,
+        OutputPin     & enable_pin,
+        OutputPin     & reset_pin,
+        OutputPin     & micro_select_1_pin,         // Controls microstepping mode.
+        OutputPin     & micro_select_2_pin,         // Controls microstepping mode.
+        OutputPin     & micro_select_3_pin,         // Controls microstepping mode.
+        float           wheel_diameter,             // In centimeters.
+        float           full_steps_per_revolution,  // How many full steps needed to rotate wheel once.
+        uint8_t         pulses_per_step,            // Ie 2 for half stepping, 16 for 1/16th stepping, etc.
+        bool            acceleration_enabled,       // Whether or not to use acceleration logic.
+        float           acceleration_time_constant, // How long to accelerate to target speed. (seconds)
+        float           velocity_update_inc,        // How many full steps to update by when accelerating.
+        accelerator_t   accel_function_pointer      // Acceleration callback function used to change ISR frequency.
     ) :
     direction_pin(direction_pin),
-    step_pin(step_pin)
+    step_pin(step_pin),
+    enable_pin(enable_pin),
+    reset_pin(reset_pin),
+    micro_select_1_pin(micro_select_1_pin),
+    micro_select_2_pin(micro_select_2_pin),
+    micro_select_3_pin(micro_select_3_pin)
 {
-    this->accel_function_pointer = accel_function_pointer;
-
-    this->pulses_per_step = pulses_per_step;
-    this->acceleration_enabled = acceleration_enabled;
+    this->accel_function_pointer     = accel_function_pointer;
+    this->pulses_per_step            = pulses_per_step;
+    this->acceleration_enabled       = acceleration_enabled;
     this->acceleration_time_constant = acceleration_time_constant;
-    this->velocity_update_inc = velocity_update_inc;
+    this->velocity_update_inc        = velocity_update_inc;
+
+    // Number of steps need for the wheel to make one full rotation
+    this->full_steps_per_revolution = full_steps_per_revolution;
+
+    // In centimeters
+    this->wheel_diameter      = wheel_diameter;
+    this->wheel_circumference = wheel_diameter * PI;
+
+    this->full_steps_per_cm = 2.0f * full_steps_per_revolution / wheel_circumference;
+    this->cm_per_full_step  = 1.0f / full_steps_per_cm;
+    this->steps_per_cm      = full_steps_per_cm * pulses_per_step;
+    this->cm_per_step       = 1.0f / steps_per_cm;
 
     this->update_total_steps = true;
     this->current_speed = 0;
@@ -70,6 +96,33 @@ StepperMotor::StepperMotor
     this->current_steps = 0;
 
 } // StepperMotor()
+
+/******************************************************************************
+* Name: Initialize
+*
+* Description:
+******************************************************************************/
+void StepperMotor::Initialize(void)
+{
+    step_pin.Init(LOW);
+
+    direction_pin.Init(LOW);
+
+    // Active low logic so low means enabled.
+    enable_pin.Init(LOW);
+
+    // Active low logic so high means not in constant reset.
+    reset_pin.Init(HIGH);
+
+    // TODO Set this depending on what pulses per step are set.
+    // Microstepping select pins.
+    micro_select_1_pin.Init(HIGH);
+    micro_select_1_pin.Init(HIGH);
+    micro_select_1_pin.Init(HIGH);
+
+    ReInitialize();
+
+} // Initialize()
 
 /******************************************************************************
 * Name: ReInitialize
@@ -88,20 +141,38 @@ void StepperMotor::ReInitialize(void)
 /******************************************************************************
 * Name: Drive
 *
-* Description: Drives stepper motor in either forward or reverse direction at
-*              specified speed.  Provided speed should always be positive.
+* Description: Set motor to drive at specified forward velocity. If velocity is negative
+*              then motor will drive in reverse.
 ******************************************************************************/
 void StepperMotor::Drive
     (
-        motor_direction_t new_direction, // Either forwards or backwards.
-        uint32_t          new_speed      // Full steps per second (should always be positive)
+        float new_velocity // cm / sec
     )
 {
+    motor_direction_t new_direction = (new_velocity >= 0.f) ? drive_forward : drive_backward;
+
     SetDirection(new_direction);
-    SetTargetSpeed(new_speed);
+
+    SetTargetSpeed((uint32_t)(full_steps_per_cm * fabs(new_velocity)));
 
 } // Drive()
 
+/******************************************************************************
+* Name: AddVelocity
+*
+* Description: Change current commanded velocity by the given amount. Can be either
+*              positive or negative.
+******************************************************************************/
+void StepperMotor::AddVelocity
+    (
+        float velocity_change // cm / sec
+    )
+{
+    float new_velocity = get_commanded_velocity() + velocity_change;
+
+    Drive(new_velocity);
+
+} // AddVelocity()
 
 /******************************************************************************
 * Name: Step
@@ -118,10 +189,15 @@ void StepperMotor::Step(void)
     if (target_speed != 0)
     //|| (acceleration_enabled && acceleration < 0)) doesn't work quite right I'm not worried about it though
     {
-        current_steps++;
-        if (update_total_steps)
+        if (current_direction == drive_forward)
         {
+            current_steps++;
             total_steps++;
+        }
+        else
+        {
+            current_steps--;
+            total_steps--;
         }
 
         step_pin.Toggle();
@@ -189,7 +265,7 @@ uint32_t StepperMotor::UpdateSpeed(void)
 * Description: Sets direction to either forward or backwards without changing
 *              motor speed.
 ******************************************************************************/
-inline void StepperMotor::SetDirection
+void StepperMotor::SetDirection
     (
         motor_direction_t new_direction
     )
@@ -202,6 +278,8 @@ inline void StepperMotor::SetDirection
     {
         direction_pin.WriteHigh();
     }
+
+    current_direction = new_direction;
 
 } // SetDirection()
 
@@ -258,3 +336,16 @@ inline bool StepperMotor::OvershotTargetSpeed(void)
          || (acceleration < 0.f && current_speed < target_speed));
 
 } // OvershotTargetSpeed()
+
+/******************************************************************************
+* Name: get_commanded_velocity
+*
+* Description:
+******************************************************************************/
+float StepperMotor::get_commanded_velocity(void)
+{
+    float sign = (current_direction == drive_forward) ? 1.f : -1.f;
+
+    return target_speed * cm_per_full_step * sign;
+
+} // get_commanded_velocity()

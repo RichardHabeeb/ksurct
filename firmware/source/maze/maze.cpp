@@ -191,10 +191,65 @@ void Maze::Map
 /*****************************************************************************
 * Function: Transpose
 *
-* Description:
+* Description: UNTESTED
 *****************************************************************************/
 void Maze::Transpose(void)
 {
-    // TODO
 
+	for (uint32_t r = 0; r < number_rows; r++)
+	{
+		for (uint32_t c = 0; c < number_columns; c++)
+		{
+            if(c > number_rows-r && c != r)
+            {
+                Cell* temp = cell_index[r][c];
+                cell_index[r][c] = cell_index[c][r];
+                cell_index[c][r] = temp;
+            }
+            
+            cell_index[r][c]->TransposeWalls();
+
+		}
+	}
+    
 } // Transpose()
+
+/*****************************************************************************
+* Function: MapCenterSquareWalls
+*
+* Description: UNTESTED
+*****************************************************************************/
+void Maze::MapCenterSquareWalls
+    (
+        uint32_t entrance_cell_r,
+        uint32_t entrance_cell_c,
+        heading_t entrance_heading
+    )
+{
+    uint32_t south_west_corner_r = number_rows/2;
+    uint32_t south_west_corner_c = number_columns/2;
+    
+    cell_index[south_west_corner_r][south_west_corner_c]->set_wall(east);
+    cell_index[south_west_corner_r][south_west_corner_c]->set_wall(south);
+    
+    cell_index[south_west_corner_r][south_west_corner_c - 1]->set_wall(west);
+    cell_index[south_west_corner_r][south_west_corner_c - 1]->set_wall(south);
+
+    cell_index[south_west_corner_r - 1][south_west_corner_c]->set_wall(east);
+    cell_index[south_west_corner_r - 1][south_west_corner_c]->set_wall(north);
+    
+    cell_index[south_west_corner_r - 1][south_west_corner_c - 1]->set_wall(west);
+    cell_index[south_west_corner_r - 1][south_west_corner_c - 1]->set_wall(north);
+    
+    uint32_t prior_entrance_cell_r = entrance_cell_r + (entrance_heading == north) - (entrance_heading == south);
+    uint32_t prior_entrance_cell_c = entrance_cell_c + (entrance_heading == east) - (entrance_heading == west);
+    
+    cell_index[entrance_cell_r][entrance_cell_c]->set_adjacent_cell
+        (
+        GetReverseHeading(entrance_heading),
+        cell_index[prior_entrance_cell_r][prior_entrance_cell_c]
+        );
+    
+    
+    
+} // MapCenterSquareWalls()

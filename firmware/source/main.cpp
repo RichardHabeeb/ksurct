@@ -58,9 +58,9 @@ int main(void)
     uint32_t number_of_rows    = 16;
     uint32_t number_of_columns = 16;
     float    cell_length       = 18.0f;
-
-    //Maze * maze = new Maze(number_of_rows, number_of_columns, cell_length);
-    Maze * maze = TestMazeCreator().CreateMaze(number_of_rows, number_of_columns, cell_length);
+    
+    Maze * maze = new Maze(number_of_rows, number_of_columns, cell_length);
+    //Maze * maze = TestMazeCreator().CreateMaze(number_of_rows, number_of_columns, cell_length);
     maze->set_starting_cell(0, 0);
     maze->set_goal_cell(number_of_rows/2, number_of_columns/2);
 
@@ -68,19 +68,20 @@ int main(void)
 
     static SimpleFloodFill simple_flood_fill(maze);
 
+    /*
     static PairedDCBrushedMotors motors(3.0f,  // Wheel diameter. (centimeters)
                                         1000,  // How many encoder counts make up one wheel rotation.
                                         6.0f,  // Wheel to wheel distance (centimeters)
                                         1.0f); // Degrees / sec for a given % duty cycle.
-
-    /*
+    */
+    
     static PairedStepperMotors motors(false, // Acceleration enabled
                                       180,   // Turn speed (degrees per second)
                                       6,     // Wheel diameter (centimeters)
                                       11,    // Wheel base (centimeters)
                                       200,   // Full steps per revolution
                                       16);   // Pulses per full steps (for microstepping)
-    */
+    
 
     // TODO: Figure out gains / limits
     static PID centering_controller(0,    // Proportional Gain

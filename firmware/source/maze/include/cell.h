@@ -46,6 +46,8 @@ public: // methods
         (
             heading_t h
         );
+    
+    void TransposeWalls(void);
 
 	void set_wall
         (

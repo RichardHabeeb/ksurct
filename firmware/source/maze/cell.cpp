@@ -110,3 +110,20 @@ bool Cell::IsWall(heading_t h)
 	return (adjacent_cells[h] == _NULL);
 
 } // IsWall()
+
+/*****************************************************************************
+* Function: TransposeWalls
+*
+* Description:	Swap North and West and South and East Pointers
+*****************************************************************************/
+void Cell::TransposeWalls(void)
+{
+	Cell* swap_temp         = adjacent_cells[north];
+    adjacent_cells[north]   = adjacent_cells[west];
+    adjacent_cells[west]    = swap_temp;
+    
+    swap_temp               = adjacent_cells[south];
+    adjacent_cells[south]   = adjacent_cells[east];
+    adjacent_cells[east]    = swap_temp;
+
+} // TransposeWalls()

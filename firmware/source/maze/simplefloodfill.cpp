@@ -76,34 +76,41 @@ void SimpleFloodFill::FindNextPathSegment
 		uint32_t*		cells_to_travel         // out param of the number of cells to travel in the given direction
 	)
 {
-        Cell* goal_cell		= m->get_goal_cell();
-        Cell* current_cell      = m->get_cell(robot_current_row, robot_current_col);
-        uint32_t depth		= FloodFill();
-        *cells_to_travel        = 0;
+    Cell* goal_cell		        = m->get_goal_cell();
+    Cell* current_cell          = m->get_cell(robot_current_row, robot_current_col);
+    uint32_t depth		        = FloodFill();
+    uint32_t current_cell_depth = *((int32_t*)current_cell->get_data());
+    *cells_to_travel            = 0;
 
-        if (depth == MAX_FLOOD_DEPTH) return;
+    if (depth == MAX_FLOOD_DEPTH) return;
+    
+    
+    //Decide how many cells to travel forward (0->N cells)
+    Cell* adjacent_cell = current_cell->get_adjacent_cell(robot_current_heading);
+    
+    while(adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == current_cell_depth - 1)
+    {
+        *cells_to_travel += 1;
+        current_cell_depth--;
+        current_cell = adjacent_cell;
+        adjacent_cell = adjacent_cell->get_adjacent_cell(robot_current_heading);
+    }
+    
+    //decide which direction to turn after that
+    for (heading_t h = north; h < num_cardinal_directions; h++)
+    {
+        if(h == robot_current_heading  || (h == GetReverseHeading(robot_current_heading) && cells_to_travel > 0)) continue;
+        
+        Cell* adjacent_cell = current_cell->get_adjacent_cell(h);
 
-        while (current_cell != _NULL && current_cell != goal_cell)
+        if (adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == current_cell_depth - 1)
         {
-                for (heading_t h = north; h < num_cardinal_directions; h++)
-                {
-                        Cell* adjacent_cell = current_cell->get_adjacent_cell(h);
+            *next_heading = h;
+            return;
+        }   
+        
 
-                        if (adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == *((int32_t*)current_cell->get_data()) - 1)
-                        {
-                                if(h != robot_current_heading)
-                                {
-                                     *next_heading = h;
-                                     return;
-                                }
-                                *cells_to_travel += 1;
-                                current_cell = adjacent_cell;
-                                break;
-
-                        }
-
-                }
-        }
+    }
 
 } // FindNextPathSegment()
 

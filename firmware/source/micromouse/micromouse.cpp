@@ -624,8 +624,7 @@ void Micromouse::HandleMazeSolve(void)
     // now mark rest of square as walls.
     if (num_maze_solves == 1)
     {
-        // TODO
-        //maze.MapCenterSquareWalls();
+        maze.MapCenterSquareWalls(current_position.y, current_position.x, current_heading);
     }
 
     in_middle = true;

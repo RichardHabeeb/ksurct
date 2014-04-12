@@ -70,6 +70,13 @@ public: // methods
             uint32_t r,
             uint32_t c
         );
+    
+    void MapCenterSquareWalls
+        (
+            uint32_t entrance_cell_r,
+            uint32_t entrance_cell_c,
+            heading_t entrance_heading
+        );
 
     // Pass in a static function pointer to exceute the function on each cell of the maze.
     void Map

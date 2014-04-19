@@ -51,12 +51,7 @@
 #define IR_ADC                          ADC1
 
 // Set up these channels to match order of sensors enum
-#define IR_CHANNELS		        { ADC_Channel_14,       \
-                                  ADC_Channel_6,        \
-                                  ADC_Channel_4 }
-//MTO Only reading sensors for left front and right
-//  save setup for all sensors
-                              // {ADC_Channel_14,        \
+#define IR_CHANNELS		        { ADC_Channel_14,        \
                                   ADC_Channel_7,         \
                                   ADC_Channel_6,         \
                                   ADC_Channel_5,         \

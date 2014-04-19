@@ -26,9 +26,9 @@
 enum sensor_id_t
 {
     sensor_id_left,
-    //sensor_id_front_nw,
+    sensor_id_front_nw,
     sensor_id_front,
-    //sensor_id_front_ne,
+    sensor_id_front_ne,
     sensor_id_right,
 
     number_of_sensors

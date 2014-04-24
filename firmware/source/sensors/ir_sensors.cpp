@@ -62,10 +62,34 @@ static void TimerCallback( void );
 * Description: Initializes fields for new instance of IRSensors object, sets up
 *              ADC with DMA for the sensors.
 *****************************************************************************/
-IRSensors::IRSensors()
+IRSensors::IRSensors
+    (
+        robot_identifier_t current_robot  // The robot that is curently being used
+    )
 {
-    emiter_gpio = IR_EMITER_GPIO;
-    emiter_pins = IR_EMITER_PINS;
+    this_robot = current_robot;
+    switch( this_robot )
+    {
+        case BABY_KITTEN: ADCx = ADC1;
+                          emiter_gpio = GPIOA;
+                          emiter_pins = GPIO_Pin_0
+                                      | GPIO_Pin_1
+                                      | GPIO_Pin_2
+                                      | GPIO_Pin_3
+                                      | GPIO_Pin_4;
+                          break;
+
+        case POWERLION:   ADCx = ADC1;
+                          emiter_gpio = GPIOB;
+                          emiter_pins = GPIO_Pin_11
+                                      | GPIO_Pin_12
+                                      | GPIO_Pin_13
+                                      | GPIO_Pin_14
+                                      | GPIO_Pin_15;
+                          break;
+
+        default: break;
+    }
     reading_dist = false;
     memset( this->raw_readings, 0, number_of_sensors * sizeof( *raw_readings ) );
     memset( this->ambiant_light, 0, number_of_sensors * sizeof( *ambiant_light ) );
@@ -81,42 +105,51 @@ IRSensors::IRSensors()
 *****************************************************************************/
 void IRSensors::Init( void )
 {
-    // Enable clocks
-    RCC_AHB1PeriphClockCmd( IR_EMITER_AHBPERIPH_GPIO, ENABLE );
-    RCC_AHB1PeriphClockCmd( IR_COLLECTOR1_AHBPERIPH_GPIO, ENABLE );
-    RCC_AHB1PeriphClockCmd( IR_COLLECTOR2_AHBPERIPH_GPIO, ENABLE );
-    RCC_APB2PeriphClockCmd( IR_ADC_APB, ENABLE );
-    RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_DMA2, ENABLE );
-
-    InitInterrupts();
-
     GPIO_InitTypeDef  GPIO_InitStructure;
+    switch( this_robot )
+    {
+        case BABY_KITTEN: // Intentional fallthrough
+
+        case POWERLION:   // Enable clocks
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE );
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOC, ENABLE );
+                          RCC_APB2PeriphClockCmd( RCC_APB2Periph_ADC1, ENABLE );
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_DMA2, ENABLE );
+
+                          // Set up collector IO
+                          GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_5
+                                                          | GPIO_Pin_6
+                                                          | GPIO_Pin_7;
+                          GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
+                          GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+                          GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+                          GPIO_Init( GPIOA, &GPIO_InitStructure);
+
+                          // Set up collector IO
+                          GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_4
+                                                          | GPIO_Pin_5;
+                          GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
+                          GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+                          GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+                          GPIO_Init(GPIOC, &GPIO_InitStructure);
+                         break;
+
+        default: break;
+    }
+
     // Set up emitter IO
-    GPIO_InitStructure.GPIO_Pin     = IR_EMITER_PINS;
+    GPIO_InitStructure.GPIO_Pin     = emiter_pins;
     GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
     GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
     GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-    GPIO_Init(IR_EMITER_GPIO, &GPIO_InitStructure);
+    GPIO_Init(emiter_gpio, &GPIO_InitStructure);
 
-    // Set up collector IO
-    GPIO_InitStructure.GPIO_Pin     = IR_COLLECTOR1_PINS;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-    GPIO_Init(IR_COLLECTOR1_GPIO, &GPIO_InitStructure);
-
-    // Set up collector IO
-    GPIO_InitStructure.GPIO_Pin     = IR_COLLECTOR2_PINS;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-    GPIO_Init(IR_COLLECTOR2_GPIO, &GPIO_InitStructure);
-
+    InitInterrupts();
     InitDMA();
     InitADC();
 
-    // Wait some time for stuff to get started before starting interupts
+    // Wait some time for voltages to stabilize before starting interupts
     for( int i = 0; i < 1000; i++ )
     {
         asm( "nop" );
@@ -135,7 +168,16 @@ float IRSensors::ReadDistance( sensor_id_t index )
 {
     float inv_x = 1.0f /(rolling_average[ index ] * ADC_TO_MV);
 
-    return( -269032.0f * inv_x * inv_x + 4556.5 * inv_x + 0.9883 );
+    switch( this_robot )
+    {
+        case BABY_KITTEN: // Temporary fallthrough
+
+        case POWERLION:   return( -269032.0f * inv_x * inv_x + 4556.5 * inv_x + 0.9883 );
+
+        default: break;
+    }
+
+    return -1.0f;
 
 } // ReadDistance
 
@@ -161,8 +203,7 @@ void IRSensors::StartRead( void )
         asm( "nop" );
     }
 
-    //Start conversion of regular channel group
-    IR_ADC->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+    ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
 
 } // StartRead
 
@@ -200,8 +241,7 @@ void IRSensors::InitDMA()
 {
     DMA_InitTypeDef 	DMA_InitStructure;
 
-    DMA_InitStructure.DMA_Channel             = DMA_Channel_0;
-    DMA_InitStructure.DMA_PeripheralBaseAddr  =	(uint32_t)&(IR_ADC->DR);
+    DMA_InitStructure.DMA_PeripheralBaseAddr  = (uint32_t)&(ADCx->DR);
     DMA_InitStructure.DMA_Memory0BaseAddr     =	(uint32_t)raw_readings;
     DMA_InitStructure.DMA_DIR                 =	DMA_DIR_PeripheralToMemory;
     DMA_InitStructure.DMA_BufferSize          =	number_of_sensors;
@@ -216,11 +256,19 @@ void IRSensors::InitDMA()
     DMA_InitStructure.DMA_MemoryBurst         =	DMA_MemoryBurst_Single;
     DMA_InitStructure.DMA_PeripheralBurst     =	DMA_PeripheralBurst_Single;
 
-    DMA_Init( DMA2_Stream0, &DMA_InitStructure );
-    DMA_Cmd( DMA2_Stream0, ENABLE );
+    switch( this_robot )
+    {
+        case BABY_KITTEN: // Intentional fallthrough
 
-    // Set up transfer error interupt
-    DMA_ITConfig( DMA2_Stream0, DMA_IT_TE, ENABLE);
+        case POWERLION:   DMA_InitStructure.DMA_Channel = DMA_Channel_0;
+                          DMA_Init( DMA2_Stream0, &DMA_InitStructure );
+                          DMA_Cmd( DMA2_Stream0, ENABLE );
+                          // Set up transfer error interupt
+                          DMA_ITConfig( DMA2_Stream0, DMA_IT_TE, ENABLE );
+                          break;
+
+        default: break;
+    }
 
 } // InitDMA()
 
@@ -233,6 +281,26 @@ void IRSensors::InitDMA()
 void IRSensors::InitADC( void )
 {
     ADC_InitTypeDef       ADC_InitStructure;
+    uint8_t channels[number_of_sensors];
+    switch( this_robot )
+    {
+        case BABY_KITTEN: channels[0] = ADC_Channel_14;
+                          channels[1] = ADC_Channel_7;
+                          channels[2] = ADC_Channel_6;
+                          channels[3] = ADC_Channel_5;
+                          channels[4] = ADC_Channel_4;
+                          break;
+
+        case POWERLION:   channels[0] = ADC_Channel_14; //Front sensor channels
+                          channels[1] = ADC_Channel_7;
+                          channels[2] = ADC_Channel_6;
+                          channels[3] = ADC_Channel_5;
+                          channels[4] = ADC_Channel_4;
+                          break;
+
+        default:          break;
+    }
+
 
     ADC_DeInit();
 
@@ -253,27 +321,26 @@ void IRSensors::InitADC( void )
     ADC_InitStructure.ADC_DataAlign                 = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_NbrOfConversion           = number_of_sensors;
 
-    ADC_Init(IR_ADC, &ADC_InitStructure);
+    ADC_Init(ADCx, &ADC_InitStructure);
 
     /* ADC regular channels configuration *************************************/
-    uint8_t channels[] = IR_CHANNELS;
     for( uint8_t i = 0; i < number_of_sensors; i++ )
     {
-        ADC_RegularChannelConfig(IR_ADC, channels[i], i+1, ADC_SampleTime_480Cycles);
+        ADC_RegularChannelConfig(ADCx, channels[i], i+1, ADC_SampleTime_480Cycles);
     }
 
-    ADC_EOCOnEachRegularChannelCmd(IR_ADC, DISABLE);
-    ADC_ContinuousModeCmd( IR_ADC, DISABLE );
-    ADC_DiscModeChannelCountConfig( IR_ADC, number_of_sensors );
-    ADC_DiscModeCmd( IR_ADC, ENABLE );
+    ADC_EOCOnEachRegularChannelCmd(ADCx, DISABLE);
+    ADC_ContinuousModeCmd( ADCx, DISABLE );
+    ADC_DiscModeChannelCountConfig( ADCx, number_of_sensors );
+    ADC_DiscModeCmd( ADCx, ENABLE );
 
-    ADC_ITConfig( IR_ADC, ADC_IT_EOC, ENABLE );
+    ADC_ITConfig( ADCx, ADC_IT_EOC, ENABLE );
 
-    ADC_DMARequestAfterLastTransferCmd( IR_ADC, ENABLE);
+    ADC_DMARequestAfterLastTransferCmd( ADCx, ENABLE);
 
     /* Enable ADC */
-    ADC_DMACmd( IR_ADC, ENABLE );
-    ADC_Cmd( IR_ADC, ENABLE);
+    ADC_DMACmd( ADCx, ENABLE );
+    ADC_Cmd( ADCx, ENABLE);
 
 } // InitADC()
 
@@ -287,18 +354,27 @@ void IRSensors::InitInterrupts( void )
 {
     NVIC_InitTypeDef NVIC_InitStructure;
 
-    // Enable timer global interrupt
-    NVIC_InitStructure.NVIC_IRQChannel = ADC_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    switch( this_robot )
+    {
+        case BABY_KITTEN: // Intentional fallthrough
 
-    NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream0_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+        case POWERLION:   // Enable timer global interrupt
+                          NVIC_InitStructure.NVIC_IRQChannel = ADC_IRQn;
+                          NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+                          NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+                          NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+                          NVIC_Init(&NVIC_InitStructure);
+
+                          NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream0_IRQn;
+                          NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+                          NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+                          NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+                          NVIC_Init(&NVIC_InitStructure);
+                          break;
+
+        default: break;
+    }
+
 
 } // InitInterrupts()
 

@@ -58,7 +58,7 @@ int main(void)
     uint32_t number_of_rows    = 16;
     uint32_t number_of_columns = 16;
     float    cell_length       = 18.0f;
-    
+
     Maze * maze = new Maze(number_of_rows, number_of_columns, cell_length);
     //Maze * maze = TestMazeCreator().CreateMaze(number_of_rows, number_of_columns, cell_length);
     maze->set_starting_cell(0, 0);
@@ -74,14 +74,14 @@ int main(void)
                                         6.0f,  // Wheel to wheel distance (centimeters)
                                         1.0f); // Degrees / sec for a given % duty cycle.
     */
-    
+
     static PairedStepperMotors motors(false, // Acceleration enabled
                                       180,   // Turn speed (degrees per second)
                                       6,     // Wheel diameter (centimeters)
                                       11,    // Wheel base (centimeters)
                                       200,   // Full steps per revolution
                                       16);   // Pulses per full steps (for microstepping)
-    
+
 
     // TODO: Figure out gains / limits
     static PID centering_controller(0,    // Proportional Gain
@@ -98,7 +98,7 @@ int main(void)
     wall_thresholds.side  = (maze->get_cell_length() / 2.f) + 5.f;
 
     //static SimulatedIRSensors ir_sensors;
-    static IRSensors ir_sensors;
+    static IRSensors ir_sensors(POWERLION);
     ir_sensors.Init();
 
     static Micromouse micromouse(*maze, simple_flood_fill, ir_sensors, motors, centering_controller, wall_thresholds, 18.f);

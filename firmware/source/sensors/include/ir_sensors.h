@@ -23,43 +23,15 @@
 *                                      CONSTANTS
 *--------------------------------------------------------------------------------------*/
 
-// Pin Definitions for front Power Lion
-#define IR_EMITER_GPIO                  GPIOB
-#define IR_EMITER_PINS                ( GPIO_Pin_11     \
-                                      | GPIO_Pin_12     \
-                                      | GPIO_Pin_13     \
-                                      | GPIO_Pin_14     \
-                                      | GPIO_Pin_15 )
-
-#define IR_EMITER_AHBPERIPH_GPIO        RCC_AHB1Periph_GPIOB
-
-
-#define IR_COLLECTOR2_GPIO               GPIOC
-#define IR_COLLECTOR2_PINS               GPIO_Pin_4
-#define IR_COLLECTOR2_AHBPERIPH_GPIO     RCC_AHB1Periph_GPIOC
-
-#define IR_COLLECTOR1_GPIO               GPIOA
-#define IR_COLLECTOR1_PINS             ( GPIO_Pin_7     \
-                                       | GPIO_Pin_6     \
-                                       | GPIO_Pin_5     \
-                                       | GPIO_Pin_4 )
-#define IR_COLLECTOR1_AHBPERIPH_GPIO     RCC_AHB1Periph_GPIOA
-
-
-// If ADC changes, change DMA stream/channel
-#define IR_ADC_APB                      RCC_APB2Periph_ADC1
-#define IR_ADC                          ADC1
-
-// Set up these channels to match order of sensors enum
-#define IR_CHANNELS		        { ADC_Channel_14,        \
-                                  ADC_Channel_7,         \
-                                  ADC_Channel_6,         \
-                                  ADC_Channel_5,         \
-                                  ADC_Channel_4 }
-
 /*---------------------------------------------------------------------------------------
 *                                        TYPES
 *--------------------------------------------------------------------------------------*/
+// Identifies the robot
+typedef enum
+{
+    BABY_KITTEN,
+    POWERLION
+} robot_identifier_t;
 
 /*---------------------------------------------------------------------------------------
 *                                       CLASSES
@@ -74,12 +46,15 @@ class IRSensors : public IDistanceSensors
 {
 public: // methods
 
-    IRSensors(void);
+    IRSensors
+        (
+            robot_identifier_t  // The identity of the robot for pin definitions
+        );
 
     // Returns the distance measured by the sensor indicated in centimeters
     float ReadDistance
         (
-            sensor_id_t  //Sensor to be read
+            sensor_id_t  // Sensor to be read
         );
 
     // Starts one read for all of the sensors, every odd read will be a measurement of
@@ -118,6 +93,8 @@ private: // fields
     float rolling_average[number_of_sensors];
     uint32_t emiter_pins;
     GPIO_TypeDef* emiter_gpio;
+    ADC_TypeDef * ADCx;
+    robot_identifier_t this_robot;
 
 }; // IRSensors
 

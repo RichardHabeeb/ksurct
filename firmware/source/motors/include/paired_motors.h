@@ -70,7 +70,16 @@ public: // methods
             float         turn_angle,     // How far to turn in degrees
             float         turn_speed      // How fast to turn in degrees per second.
         );
-
+    
+   // Turn the robot the correct 'angle' in degrees in the direction specified using a
+   // moving turn approach along an arc.
+    void ArcTurn
+        (
+            motor_turn_t  new_direction,  // Which direction to turn.
+            float         turn_angle,     // How far to turn in degrees
+            float         turn_radius     // Point from center of robot to turn about.
+        );
+    
     // Commands both motors to stop and will wait until they are.
     void Stop(void);
 

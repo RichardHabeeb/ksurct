@@ -134,6 +134,56 @@ void PairedMotors::ZeroPointTurn
 } // PairedMotors::ZeroPointTurn()
 
 /******************************************************************************
+* Name: ArcTurn
+*
+* Description: Turn the robot the correct 'angle' in degrees in the direction
+*              specified using a moving turn approach along an arc
+******************************************************************************/
+void PairedMotors::ArcTurn
+    (
+        motor_turn_t  new_direction,  // Which direction to turn.
+        float         turn_angle,     // How far to turn in degrees
+        float         turn_radius     // Point from center of robot to turn about.
+    )
+{
+    float distance_to_turn = turn_radius * (turn_angle * PI / 180.f);
+    
+    // Reset the current distance so we know how far we have turned
+    right_motor->reset_current_distance();
+    left_motor->reset_current_distance();
+    
+    float arc_turn_factor = (((turn_radius + wheel_2_wheel_distance / 2.f) 
+                                          / turn_radius) - 1.f); 
+    
+    float current_center_speed = (right_motor->get_commanded_velocity() + 
+                            left_motor->get_commanded_velocity()) / 2.f;
+    
+    // Velocity difference between wheel and velocity of robot
+    float delta_velocity = current_center_speed * arc_turn_factor;
+
+    if (new_direction == turn_right)
+    {
+        left_motor->AddVelocity(delta_velocity);       
+        right_motor->AddVelocity(-delta_velocity);          
+    }                                                                
+    else if (new_direction == turn_left)                             
+    {
+        right_motor->AddVelocity(delta_velocity);
+        left_motor->AddVelocity(-delta_velocity);
+    }
+   
+    float distance_travelled = 0.f;
+    
+    // Wait until you've finished your turn
+    while (distance_travelled < distance_to_turn)
+    {
+        distance_travelled = (right_motor->get_current_distance() + 
+                                left_motor->get_current_distance()) / 2.f;
+    }
+    
+} // PairedMotors::ArcTurn()
+
+/******************************************************************************
 * Name: Stop
 *
 * Description: Tells both motors they need to stop and wait here until they do.

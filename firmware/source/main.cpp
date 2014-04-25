@@ -39,6 +39,10 @@ SystemTimer system_timer;
 *                                     PROCEDURES
 *--------------------------------------------------------------------------------------*/
 
+// Forward declarations.
+void test_motors(PairedMotors & motors);
+void test_sensors(IDistanceSensors & sensors);
+
 /*****************************************************************************
 * Function: main
 *
@@ -50,32 +54,8 @@ int main(void)
 
     system_timer.Initialize(1e6);
 
-    // Motors test.
-//    PairedMotors & motors = micromouse->get_motors();
-//    while (true)
-//    {
-//        for (uint32_t i = 0; i < 1e6; ++i);
-//        motors.Drive(5);
-//        for (uint32_t i = 0; i < 1e6; ++i);
-//        printf("\n\n\n%f", motors.get_left_motor().get_current_distance());
-//        printf("\n%f", motors.get_right_motor().get_current_distance());
-//    }
-
-    // Sensor test.
-//    IDistanceSensors & sensors = micromouse->get_sensors();
-//    while (true)
-//    {
-//        volatile float left        = sensors.ReadDistance(sensor_id_left);
-//        volatile float front_left  = sensors.ReadDistance(sensor_id_front_nw);
-//        volatile float front       = sensors.ReadDistance(sensor_id_front);
-//        volatile float front_right = sensors.ReadDistance(sensor_id_front_ne);
-//        volatile float right       = sensors.ReadDistance(sensor_id_right);
-//        printf("\n\nl:  %f", left);
-//        printf("\nfl: %f", front_left);
-//        printf("\nf:  %f", front);
-//        printf("\nfr: %f", front_right);
-//        printf("\nr:  %f", right);
-//    }
+    //test_motors(micromouse->get_motors());
+    //test_sensors(micromouse->get_sensors());
 
     while (true)
     {
@@ -88,3 +68,51 @@ int main(void)
     // return 0; KLM: Remove warning: statement is unreachable.
 
 } // main()
+
+/*****************************************************************************
+* Function: test_motors
+*
+* Description: TODO
+*****************************************************************************/
+void test_motors(PairedMotors & motors)
+{
+    // ZeroPointTurn test.
+    motors.ZeroPointTurn(turn_right, 90, 45);
+    
+    // ArcTurn test.
+    motors.Drive(10);
+    motors.ArcTurn(turn_right, 90, 9);
+    
+    while (true)
+    {
+        for (uint32_t i = 0; i < 1e6; ++i);
+        motors.Drive(5);
+        for (uint32_t i = 0; i < 1e6; ++i);
+        printf("\n\n\n%f", motors.get_left_motor().get_current_distance());
+        printf("\n%f", motors.get_right_motor().get_current_distance());
+    }
+    
+} // test_motors()
+
+/*****************************************************************************
+* Function: test_sensors
+*
+* Description: TODO
+*****************************************************************************/
+void test_sensors(IDistanceSensors & sensors)
+{
+    while (true)
+    {
+        volatile float left        = sensors.ReadDistance(sensor_id_left);
+        volatile float front_left  = sensors.ReadDistance(sensor_id_front_nw);
+        volatile float front       = sensors.ReadDistance(sensor_id_front);
+        volatile float front_right = sensors.ReadDistance(sensor_id_front_ne);
+        volatile float right       = sensors.ReadDistance(sensor_id_right);
+        printf("\n\nl:  %f", left);
+        printf("\nfl: %f", front_left);
+        printf("\nf:  %f", front);
+        printf("\nfr: %f", front_right);
+        printf("\nr:  %f", right);
+    }
+    
+} // test_sensors()

@@ -108,13 +108,19 @@ void IRSensors::Initialize( void )
     GPIO_InitTypeDef  GPIO_InitStructure;
     switch( this_robot )
     {
-        case BABY_KITTEN: // Intentional fallthrough
 
         case POWERLION:   // Enable clocks
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOB, ENABLE );
+                          // Intentional fallthrough - Powerlion emitter uses a
+                          //  clock that the Baby Kitten doesn't
+
+        case BABY_KITTEN: // Enable clocks
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE );
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOC, ENABLE );
                           RCC_APB2PeriphClockCmd( RCC_APB2Periph_ADC1, ENABLE );
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_DMA2, ENABLE );
+
+                          InitInterrupts();
 
                           // Set up collector IO
                           GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_5
@@ -145,7 +151,6 @@ void IRSensors::Initialize( void )
     GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
     GPIO_Init(emiter_gpio, &GPIO_InitStructure);
 
-    InitInterrupts();
     InitDMA();
     InitADC();
 

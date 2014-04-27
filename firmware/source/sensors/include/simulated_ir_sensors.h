@@ -50,6 +50,9 @@ public: // methods
 
     void Initialize(void);
 
+    float Calibrate(void);
+
+
     // Returns distance to robots center point in centimeters for the given sensor id.
     float ReadDistance
         (

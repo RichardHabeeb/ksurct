@@ -64,10 +64,18 @@ static void TimerCallback( void );
 *****************************************************************************/
 IRSensors::IRSensors
     (
-        robot_identifier_t current_robot  // The robot that is curently being used
+        robot_identifier_t current_robot, // The robot that is curently being used
+        IRsensor_offset_t sensor_offsets  // The offset of each sensor to the center of the robot
     )
 {
     this_robot = current_robot;
+
+    offsets[sensor_id_left]     = sensor_offsets.side_offset;
+    offsets[sensor_id_front_nw] = sensor_offsets.diagnal_offset;
+    offsets[sensor_id_front]    = sensor_offsets.front_offset;
+    offsets[sensor_id_front_ne] = sensor_offsets.diagnal_offset;
+    offsets[sensor_id_right]    = sensor_offsets.side_offset;
+
     switch( this_robot )
     {
         case BABY_KITTEN: ADCx = ADC1;
@@ -97,6 +105,62 @@ IRSensors::IRSensors
 
 } // IRSensors()
 
+/*****************************************************************************
+* Function: isCalibrating
+*
+* Description: Returns whether or not the sensors are calibrating
+*****************************************************************************/
+bool IRSensors::isCalibrating( void )
+{
+    return calibrating;
+}
+
+/*****************************************************************************
+* Function: Calibrate
+*
+* Description: Reads many right sensor readings and takes the average of them
+*****************************************************************************/
+float IRSensors::Calibrate( void )
+{
+    int i;
+    float average_distance;
+
+    // Keep timer from interfering with calibration
+    // reading data outside of timers is done to speed up calibration
+    calibrating = true;
+    {
+        ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+        calibration_data_ready = false;
+        while( !calibration_data_ready ) {};
+        for( i = 0; i<number_of_sensors; i++ )
+        {
+            ambiant_light[i] = raw_readings[i];
+        }
+        emiter_gpio->ODR |= emiter_pins;
+
+        // Wait some time for emitters to come on
+        for( i = 0; i < 1000; i++ )
+        {
+            asm( "nop" );
+        }
+
+        for( i = 0; i< 250; i++ )
+        {
+            calibration_data_ready = false;
+            ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+            while( !calibration_data_ready ) {};
+            average_distance += ( raw_readings[sensor_id_right] - ambiant_light[sensor_id_right] );
+        }
+        emiter_gpio->ODR &= ~emiter_pins;
+    }
+    calibrating = false;
+
+    average_distance /= 250.0f;
+    average_distance *= ADC_TO_MV;
+    average_distance = 1.0f/average_distance;
+
+    return( -269032.0f * average_distance * average_distance + 4556.5 * average_distance + 0.9883 + offsets[sensor_id_right] );
+}
 
 /*****************************************************************************
 * Function: Initialize
@@ -177,7 +241,7 @@ float IRSensors::ReadDistance( sensor_id_t index )
     {
         case BABY_KITTEN: // Temporary fallthrough
 
-        case POWERLION:   return( -269032.0f * inv_x * inv_x + 4556.5 * inv_x + 0.9883 );
+        case POWERLION:   return( -269032.0f * inv_x * inv_x + 4556.5 * inv_x + 0.9883 + offsets[index] );
 
         default: break;
     }
@@ -221,20 +285,26 @@ void IRSensors::StartRead( void )
 *****************************************************************************/
 void IRSensors::AcumulateData( void )
 {
-    for( int i = 0; i<number_of_sensors; i++ )
+    if( !calibrating )
     {
-        if( reading_dist )
+        for( int i = 0; i<number_of_sensors; i++ )
         {
-            rolling_average[i] = (raw_readings[i]-ambiant_light[i]) * ADC_APLHA + rolling_average[i] * ( 1 - ADC_APLHA );
-            emiter_gpio->ODR &= ~emiter_pins; // Turn off emitters
+            if( reading_dist )
+            {
+                rolling_average[i] = (raw_readings[i]-ambiant_light[i]) * ADC_APLHA + rolling_average[i] * ( 1 - ADC_APLHA );
+                emiter_gpio->ODR &= ~emiter_pins; // Turn off emitters
+            }
+            else
+            {
+                ambiant_light[i] = raw_readings[i];
+            }
         }
-        else
-        {
-            ambiant_light[i] = raw_readings[i];
-        }
+        reading_dist = !reading_dist;
     }
-    reading_dist = !reading_dist;
-
+    else
+    {
+        calibration_data_ready = true;
+    }
 } // AcumulateData()
 
 /*****************************************************************************
@@ -417,7 +487,10 @@ static void TimerCallback(void)
 {
     for( int i = 0; i < ir_count; i++ )
     {
-        all_irs[i]->StartRead();
+        if( !all_irs[i]->isCalibrating() )
+        {
+            all_irs[i]->StartRead();
+        }
     }
 
 } // TimerCallback()

@@ -134,7 +134,7 @@ bool Micromouse::SolveMaze(void)
     // TODO: Determine if need to actually calibrate this at start. Currently it's only
     //       being used for centering in cell.  Could also use as an offset to the mapping
     //       defined by sensors class.
-    right_wall_calibrated_distance = maze.get_cell_length() / 2.0f;
+    right_wall_calibrated_distance = sensors.Calibrate();
 
     maze.get_cell(current_position)->set_visited(true);
 

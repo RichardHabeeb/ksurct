@@ -65,6 +65,12 @@ void SimulatedIRSensors::Initialize(void)
 
 } // SimulatedIRSensors::Initialize()
 
+
+float SimulatedIRSensors::Calibrate( void )
+{
+    return maze->get_cell_length() / 2.0f;
+}
+
 /*****************************************************************************
 * Function: ReadDistance
 *

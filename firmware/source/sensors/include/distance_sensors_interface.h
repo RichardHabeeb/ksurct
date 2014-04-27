@@ -54,6 +54,9 @@ public: // methods
             sensor_id_t sensor_id
         ) = 0;
 
+    // Returns the average read distance measurement of the right sensor in centimeters.
+    virtual float Calibrate( void ) = 0;
+
 }; // IDistanceSensors
 
 #endif // DISTANCE_SENSORS_INTERFACE_INCLUDED_H

@@ -172,12 +172,6 @@ void IRSensors::Initialize( void )
     GPIO_InitTypeDef  GPIO_InitStructure;
     switch( this_robot )
     {
-
-        case POWERLION:   // Enable clocks
-                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOB, ENABLE );
-                          // Intentional fallthrough - Powerlion emitter uses a
-                          //  clock that the Baby Kitten doesn't
-
         case BABY_KITTEN: // Enable clocks
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE );
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOC, ENABLE );
@@ -202,7 +196,33 @@ void IRSensors::Initialize( void )
                           GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
                           GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
                           GPIO_Init(GPIOC, &GPIO_InitStructure);
-                         break;
+                          break;
+
+        case POWERLION:   // Enable clocks
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE );
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOB, ENABLE );
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOC, ENABLE );
+                          RCC_APB2PeriphClockCmd( RCC_APB2Periph_ADC1, ENABLE );
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_DMA2, ENABLE );
+
+                          InitInterrupts();
+
+                          // Set up collector IO
+                          GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_4
+                                                          | GPIO_Pin_5
+                                                          | GPIO_Pin_6
+                                                          | GPIO_Pin_7;
+                          GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
+                          GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+                          GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+                          GPIO_Init( GPIOA, &GPIO_InitStructure);
+
+                          // Set up collector IO
+                          GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_4;
+                          GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
+                          GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+                          GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+                          GPIO_Init(GPIOC, &GPIO_InitStructure);
 
         default: break;
     }
@@ -359,11 +379,11 @@ void IRSensors::InitADC( void )
     uint8_t channels[number_of_sensors];
     switch( this_robot )
     {
-        case BABY_KITTEN: channels[0] = ADC_Channel_14;
-                          channels[1] = ADC_Channel_7;
-                          channels[2] = ADC_Channel_6;
-                          channels[3] = ADC_Channel_5;
-                          channels[4] = ADC_Channel_4;
+        case BABY_KITTEN: channels[0] = ADC_Channel_15;
+                          channels[1] = ADC_Channel_14;
+                          channels[2] = ADC_Channel_7;
+                          channels[3] = ADC_Channel_6;
+                          channels[4] = ADC_Channel_5;
                           break;
 
         case POWERLION:   channels[0] = ADC_Channel_14; //Front sensor channels

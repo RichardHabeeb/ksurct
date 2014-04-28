@@ -53,9 +53,9 @@
 
 #define  STEPPER_MOTOR_CONSTANTS_GROUP
 #define  FULL_STEPS_PER_REVOLUTION    (200.f)  // How many full steps needed to rotate wheel once.
-#define  PULSES_PER_STEP              (1)      // Ie 2 for half stepping, 16 for 1/16th stepping, etc.
-#define  ACCELERATION_ENABLED         (false)  // Whether or not to use acceleration logic.
-#define  ACCELERATION_TIME_CONSTANT   (1.f)    // How long to accelerate to target speed. (seconds)
+#define  PULSES_PER_STEP              (16)     // Ie 2 for half stepping, 16 for 1/16th stepping, etc.
+#define  ACCELERATION_ENABLED         (true)   // Whether or not to use acceleration logic.
+#define  ACCELERATION_TIME_CONSTANT   (.5f)    // How long to accelerate to target speed. (seconds)
 #define  VELOCITY_UPDATE_INCREMENT    (1.f)    // How many full steps to update by when accelerating.
 
 #endif // BABY_KITTEN_SETTINGS_INCLUDED_H

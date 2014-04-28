@@ -46,8 +46,6 @@ public: // methods
         (
             OutputPin     & step_pin,
             OutputPin     & direction_pin,
-            OutputPin     & enable_pin,
-            OutputPin     & reset_pin,
             OutputPin     & micro_select_1_pin,         // Controls microstepping mode.
             OutputPin     & micro_select_2_pin,         // Controls microstepping mode.
             OutputPin     & micro_select_3_pin,         // Controls microstepping mode.
@@ -131,8 +129,6 @@ private: // fields
     // Motor control pins.
     OutputPin & step_pin;
     OutputPin & direction_pin;
-    OutputPin & enable_pin;
-    OutputPin & reset_pin;
     OutputPin & micro_select_1_pin;
     OutputPin & micro_select_2_pin;
     OutputPin & micro_select_3_pin;

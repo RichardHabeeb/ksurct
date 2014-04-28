@@ -77,21 +77,24 @@ int main(void)
 void test_motors(PairedMotors & motors)
 {
     // ZeroPointTurn test.
-    motors.ZeroPointTurn(turn_right, 90, 45);
-    
+    //motors.ZeroPointTurn(turn_right, 90, 45);
+
     // ArcTurn test.
-    motors.Drive(10);
-    motors.ArcTurn(turn_right, 90, 9);
-    
+    //motors.Drive(10);
+    //motors.ArcTurn(turn_right, 90, 9);
+
     while (true)
     {
-        for (uint32_t i = 0; i < 1e6; ++i);
-        motors.Drive(5);
-        for (uint32_t i = 0; i < 1e6; ++i);
-        printf("\n\n\n%f", motors.get_left_motor().get_current_distance());
-        printf("\n%f", motors.get_right_motor().get_current_distance());
+        for (uint32_t i = 0; i < 5e6; ++i);
+        motors.Drive(20);
+        while(1);
+        //motors.reset_current_distance();
+        //while (motors.get_right_motor().get_current_distance() < 3 * 3.14);
+        //motors.Stop();
+        //printf("\n\n\n%f", motors.get_left_motor().get_current_distance());
+        //printf("\n%f", motors.get_right_motor().get_current_distance());
     }
-    
+
 } // test_motors()
 
 /*****************************************************************************
@@ -114,5 +117,5 @@ void test_sensors(IDistanceSensors & sensors)
         printf("\nfr: %f", front_right);
         printf("\nr:  %f", right);
     }
-    
+
 } // test_sensors()

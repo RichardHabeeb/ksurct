@@ -20,7 +20,7 @@
 *--------------------------------------------------------------------------------------*/
 
 // To change micromouse this is the only line you should have to change.
-#include "power_lion_settings.h"
+#include "baby_kitten_settings.h"
 
 // Define any constants that the micromouse specific header file didn't need to define.
 // These are only defined for the sake of building all the files and should not be used

@@ -49,8 +49,6 @@ StepperMotor::StepperMotor
     (
         OutputPin     & step_pin,
         OutputPin     & direction_pin,
-        OutputPin     & enable_pin,
-        OutputPin     & reset_pin,
         OutputPin     & micro_select_1_pin,         // Controls microstepping mode.
         OutputPin     & micro_select_2_pin,         // Controls microstepping mode.
         OutputPin     & micro_select_3_pin,         // Controls microstepping mode.
@@ -64,8 +62,6 @@ StepperMotor::StepperMotor
     ) :
     direction_pin(direction_pin),
     step_pin(step_pin),
-    enable_pin(enable_pin),
-    reset_pin(reset_pin),
     micro_select_1_pin(micro_select_1_pin),
     micro_select_2_pin(micro_select_2_pin),
     micro_select_3_pin(micro_select_3_pin)
@@ -83,7 +79,9 @@ StepperMotor::StepperMotor
     this->wheel_diameter      = wheel_diameter;
     this->wheel_circumference = wheel_diameter * PI;
 
-    this->full_steps_per_cm = 2.0f * full_steps_per_revolution / wheel_circumference;
+    // Not sure why we have to multiply by 2.  Probably losing a factor of 2 somewhere else.
+    // Oh well it seems to work for now.
+    this->full_steps_per_cm = 2.f * full_steps_per_revolution / wheel_circumference;
     this->cm_per_full_step  = 1.0f / full_steps_per_cm;
     this->steps_per_cm      = full_steps_per_cm * pulses_per_step;
     this->cm_per_step       = 1.0f / steps_per_cm;
@@ -108,17 +106,38 @@ void StepperMotor::Initialize(void)
 
     direction_pin.Init(LOW);
 
-    // Active low logic so low means enabled.
-    enable_pin.Init(LOW);
-
-    // Active low logic so high means not in constant reset.
-    reset_pin.Init(HIGH);
-
     // TODO Set this depending on what pulses per step are set.
     // Microstepping select pins.
-    micro_select_1_pin.Init(HIGH);
-    micro_select_1_pin.Init(HIGH);
-    micro_select_1_pin.Init(HIGH);
+    switch (pulses_per_step)
+    {
+        case 1:
+            micro_select_1_pin.Init(LOW);
+            micro_select_2_pin.Init(LOW);
+            micro_select_3_pin.Init(LOW);
+            break;
+        case 2:
+            micro_select_1_pin.Init(HIGH);
+            micro_select_2_pin.Init(LOW);
+            micro_select_3_pin.Init(LOW);
+            break;
+        case 4:
+            micro_select_1_pin.Init(LOW);
+            micro_select_2_pin.Init(HIGH);
+            micro_select_3_pin.Init(LOW);
+            break;
+        case 8:
+            micro_select_1_pin.Init(HIGH);
+            micro_select_2_pin.Init(HIGH);
+            micro_select_3_pin.Init(LOW);
+            break;
+        default: // Intentional fall-through to 16
+        case 16:
+            micro_select_1_pin.Init(HIGH);
+            micro_select_2_pin.Init(HIGH);
+            micro_select_3_pin.Init(HIGH);
+            break;
+    }
+
 
     ReInitialize();
 

@@ -85,30 +85,22 @@ static void configure_stepper_motors
     static TimerInterruptOC timer(TIM3, TIM3_IRQn, RCC_APB1Periph_TIM3, (SystemCoreClock/4), 50000);
 
     // Instantiate GPIO motor pins (still need to be initialized)
-    static OutputPin right_motor_step_pin(GPIOD, GPIO_Pin_0, RCC_AHB1Periph_GPIOD);
-    static OutputPin left_motor_step_pin(GPIOD,  GPIO_Pin_1, RCC_AHB1Periph_GPIOD);
+    static OutputPin right_motor_step_pin(GPIOC, GPIO_Pin_7, RCC_AHB1Periph_GPIOC);
+    static OutputPin left_motor_step_pin(GPIOC,  GPIO_Pin_6, RCC_AHB1Periph_GPIOC);
 
-    static OutputPin right_motor_direction_pin(GPIOD, GPIO_Pin_2, RCC_AHB1Periph_GPIOD);
-    static OutputPin left_motor_direction_pin(GPIOD,  GPIO_Pin_3, RCC_AHB1Periph_GPIOD);
-
-    static OutputPin right_motor_enable_pin(GPIOD, GPIO_Pin_4, RCC_AHB1Periph_GPIOD);
-    static OutputPin left_motor_enable_pin(GPIOD,  GPIO_Pin_5, RCC_AHB1Periph_GPIOD);
-
-    static OutputPin right_motor_reset_pin(GPIOD, GPIO_Pin_6, RCC_AHB1Periph_GPIOD);
-    static OutputPin left_motor_reset_pin(GPIOD,  GPIO_Pin_7, RCC_AHB1Periph_GPIOD);
+    static OutputPin right_motor_direction_pin(GPIOB, GPIO_Pin_12, RCC_AHB1Periph_GPIOB);
+    static OutputPin left_motor_direction_pin(GPIOB,  GPIO_Pin_11, RCC_AHB1Periph_GPIOB);
 
     // Motor select pins (controls microstepping)
-    static OutputPin right_motor_ms1_pin(GPIOD, GPIO_Pin_8,  RCC_AHB1Periph_GPIOD);
-    static OutputPin right_motor_ms2_pin(GPIOD, GPIO_Pin_9,  RCC_AHB1Periph_GPIOD);
-    static OutputPin right_motor_ms3_pin(GPIOD, GPIO_Pin_10, RCC_AHB1Periph_GPIOD);
-    static OutputPin left_motor_ms1_pin(GPIOD,  GPIO_Pin_11, RCC_AHB1Periph_GPIOD);
-    static OutputPin left_motor_ms2_pin(GPIOD,  GPIO_Pin_12, RCC_AHB1Periph_GPIOD);
-    static OutputPin left_motor_ms3_pin(GPIOD,  GPIO_Pin_13, RCC_AHB1Periph_GPIOD);
+    static OutputPin right_motor_ms1_pin(GPIOB, GPIO_Pin_15, RCC_AHB1Periph_GPIOB);
+    static OutputPin right_motor_ms2_pin(GPIOB, GPIO_Pin_14, RCC_AHB1Periph_GPIOB);
+    static OutputPin right_motor_ms3_pin(GPIOB, GPIO_Pin_13, RCC_AHB1Periph_GPIOB);
+    static OutputPin left_motor_ms1_pin(GPIOB,  GPIO_Pin_1,  RCC_AHB1Periph_GPIOB);
+    static OutputPin left_motor_ms2_pin(GPIOB,  GPIO_Pin_2,  RCC_AHB1Periph_GPIOB);
+    static OutputPin left_motor_ms3_pin(GPIOB,  GPIO_Pin_10, RCC_AHB1Periph_GPIOB);
 
     StepperMotor * right_stepper_motor = new StepperMotor(right_motor_step_pin,
                                                           right_motor_direction_pin,
-                                                          right_motor_enable_pin,
-                                                          right_motor_reset_pin,
                                                           right_motor_ms1_pin,
                                                           right_motor_ms2_pin,
                                                           right_motor_ms3_pin,
@@ -122,8 +114,6 @@ static void configure_stepper_motors
 
     StepperMotor * left_stepper_motor = new StepperMotor(left_motor_step_pin,
                                                          left_motor_direction_pin,
-                                                         left_motor_enable_pin,
-                                                         left_motor_reset_pin,
                                                          left_motor_ms1_pin,
                                                          left_motor_ms2_pin,
                                                          left_motor_ms3_pin,

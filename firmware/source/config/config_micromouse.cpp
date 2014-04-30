@@ -81,7 +81,8 @@ Micromouse * configure_micromouse(void)
                                              *paired_motors,
                                              centering_pid,
                                              wall_thresholds,
-                                             TRAVELLING_SPEED);
+                                             TRAVELLING_SPEED,
+                                             TURNING_SPEED);
 
     if (USE_SIMULATED_SENSORS)
     {

@@ -25,6 +25,7 @@
 #define  WHEEL_BASE            (7.f)  // centimeters
 #define  WHEEL_DIAMETER        (3.f)  // centimeters
 #define  TRAVELLING_SPEED      (18.f) // centimeters / second
+#define  TURNING_SPEED         (30.f) // degrees / second
 
 /*---------------------------------------------------------------------------------------
 *                             WALL THRESHOLD OFFSETS

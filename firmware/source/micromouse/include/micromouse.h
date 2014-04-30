@@ -64,7 +64,9 @@ typedef enum
 /******************************************************************************
 * Class: Micromouse
 *
-* Description: TODO
+* Description: Represents a robot capable of solving autonomously using a maze.
+*              The robot is equipped with distance sensors and two differentially
+*              paired motors for movement.
 ******************************************************************************/
 class Micromouse
 {
@@ -79,7 +81,8 @@ public: // methods
             PairedMotors            & motors,               // Differential paired motors.
             PID                     & centering_controller, // Controller for staying in middle of cell.
             wall_threshold_t  const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
-            float                     travelling_speed      // Speed to move through maze (centimeters / second)
+            float                     travelling_speed,     // Speed to move through maze (centimeters / second)
+            float                     turning_speed         // Rotational turning speed of robot (degrees / second)
         );
 
     // Attempts to find the middle of the maze.  Returns true if successful.
@@ -257,6 +260,9 @@ private: // fields
 
     // Speed to move through maze. (centimeters / second)
     float travelling_speed;
+
+    // Rotation turn speed. (degrees / second)
+    float turning_speed;
 
     // System time that last centering control loop was ran.
     double last_centering_time;

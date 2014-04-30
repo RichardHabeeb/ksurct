@@ -1,7 +1,8 @@
 /****************************************************************************************
 * File: main.cpp
 *
-* Description: TODO
+* Description: Configures micromouse depending on configuration settings and starts system
+*              clock.  Then tells micromouse to solve maze.
 *
 * Created: 12/2/2013, by Kyle McGahee
 ****************************************************************************************/
@@ -46,7 +47,8 @@ void test_sensors(IDistanceSensors & sensors);
 /*****************************************************************************
 * Function: main
 *
-* Description: TODO
+* Description: Configures micromouse depending on configuration settings and starts system
+*              clock.  Then tells micromouse to solve maze.
 *****************************************************************************/
 int main(void)
 {

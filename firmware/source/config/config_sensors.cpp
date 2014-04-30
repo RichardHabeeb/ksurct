@@ -18,6 +18,7 @@
 #include "private_system_config.h"
 #include "simulated_ir_sensors.h"
 #include "test_maze_creator.h"
+#include "util_assert.h"
 
 /*---------------------------------------------------------------------------------------
 *                                        TYPES
@@ -57,7 +58,8 @@ IDistanceSensors * configure_distance_sensors(void)
         }
     }
 
-    // TODO: Assert pointer is non-null
+    assert(distance_sensors != NULL, ASSERT_STOP);
+
     return distance_sensors;
 
 } // configure_distance_sensors()

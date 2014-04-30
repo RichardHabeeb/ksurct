@@ -1,7 +1,9 @@
 /****************************************************************************************
 * File: micromouse.cpp
 *
-* Description: TODO
+* Description: Represents a robot capable of solving autonomously using a maze.
+*              The robot is equipped with distance sensors and two differentially
+*              paired motors for movement.
 *
 * Created: 01/25/2014, by Kyle McGahee
 ****************************************************************************************/
@@ -58,7 +60,8 @@ Micromouse::Micromouse
         PairedMotors            & motors,               // Differential paired motors.
         PID                     & centering_controller, // Controller for staying in middle of cell.
         wall_threshold_t  const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
-        float                     travelling_speed      // Speed to move through maze (centimeters / second)
+        float                     travelling_speed,     // Speed to move through maze (centimeters / second)
+        float                     turning_speed         // Rotational turning speed of robot (degrees / second)
     ) :
     maze(maze),
     path_finder(path_finder),
@@ -67,6 +70,8 @@ Micromouse::Micromouse
     centering_controller(centering_controller)
 {
     this->travelling_speed = travelling_speed;
+
+    this->turning_speed = turning_speed;
 
     this->thresholds = thresholds;
 
@@ -589,18 +594,16 @@ void Micromouse::Turn
 
     float forward_angle_in_degrees = forward_angle * degrees_per_radian;
 
-    // TODO make turn speed a class field.
-
     switch (direction_to_turn)
     {
         case right:
-            motors.ZeroPointTurn(turn_right, 90.f - forward_angle_in_degrees, 30.f);
+            motors.ZeroPointTurn(turn_right, 90.f - forward_angle_in_degrees, turning_speed);
             break;
         case left:
-            motors.ZeroPointTurn(turn_left, 90.f + forward_angle_in_degrees, 30.f);
+            motors.ZeroPointTurn(turn_left, 90.f + forward_angle_in_degrees, turning_speed);
             break;
         case backward:
-            motors.ZeroPointTurn(turn_left, 180.f + forward_angle_in_degrees, 30.f);
+            motors.ZeroPointTurn(turn_left, 180.f + forward_angle_in_degrees, turning_speed);
             break;
     }
 

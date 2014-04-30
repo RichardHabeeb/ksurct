@@ -106,7 +106,6 @@ void StepperMotor::Initialize(void)
 
     direction_pin.Init(LOW);
 
-    // TODO Set this depending on what pulses per step are set.
     // Microstepping select pins.
     switch (pulses_per_step)
     {

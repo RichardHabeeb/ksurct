@@ -26,21 +26,13 @@
 /*---------------------------------------------------------------------------------------
 *                                        TYPES
 *--------------------------------------------------------------------------------------*/
+
 // Identifies the robot
 typedef enum
 {
     BABY_KITTEN,
     POWERLION
 } robot_identifier_t;
-
-// Contains the offsets of the types of sensors to the center of the robot
-// this is used for the constructor
-typedef struct
-{
-    float side_offset;          // Offset from the front of the side sensor
-    float diagnal_offset;       // Offset from the front of the diagnal sensor
-    float front_offset;         // Offset from the front of the front sensor
-} IRsensor_offset_t;
 
 /*---------------------------------------------------------------------------------------
 *                                       CLASSES
@@ -57,8 +49,7 @@ public: // methods
 
     IRSensors
         (
-            robot_identifier_t, // The identity of the robot for pin definitions
-            IRsensor_offset_t   // The offset of each sensor to the center of the robot
+            robot_identifier_t // The identity of the robot for pin definitions
         );
 
     // Returns the distance measured by the sensor indicated in centimeters
@@ -78,8 +69,10 @@ public: // methods
     // Initializes the hardware for ADC, DMA and the interupts
     void Initialize(void);
 
-    // Returns the average read distance measurement of the right sensor in centimeters.
-    float Calibrate(void);
+    // Calculates difference between measured distance and the specified known distance
+    // that sensor should be at.  This error offset will be calculated and added in for
+    // every future reading of the sensor.
+    void CalibrateSensor( sensor_id_t sensor_id, float known_distance );
 
     // Returns whether or not the sensors are calibrating
     bool isCalibrating(void);
@@ -98,14 +91,19 @@ private: // methods
     // Initializes Interrupts for ADC and DMA
     void InitInterrupts( void );
 
+    // Returns distance in centimeters corresponding to specified ADC value.
+    // No calibration offsets are added in.
+    inline float ConvertToDistance( float adc_value );
+
 private: // fields
+
     bool reading_dist;
     bool calibrating;
     bool calibration_data_ready;
     uint16_t ambiant_light[number_of_sensors];
     uint16_t raw_readings[number_of_sensors];
     float rolling_average[number_of_sensors];
-    float offsets[number_of_sensors];
+    float calibration_offsets[number_of_sensors];
     uint32_t emiter_pins;
     GPIO_TypeDef* emiter_gpio;
     ADC_TypeDef * ADCx;

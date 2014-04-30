@@ -60,6 +60,7 @@ Micromouse::Micromouse
         PairedMotors            & motors,               // Differential paired motors.
         PID                     & centering_controller, // Controller for staying in middle of cell.
         wall_threshold_t  const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
+        sensor_offset_t   const & sensor_offsets,       // The offset of each sensor to the center of the robot.
         float                     travelling_speed,     // Speed to move through maze (centimeters / second)
         float                     turning_speed         // Rotational turning speed of robot (degrees / second)
     ) :
@@ -74,6 +75,8 @@ Micromouse::Micromouse
     this->turning_speed = turning_speed;
 
     this->thresholds = thresholds;
+
+    this->sensor_offsets = sensor_offsets;
 
     in_middle = false;
 
@@ -136,10 +139,9 @@ void Micromouse::ResetToStartingCell(void)
 *****************************************************************************/
 bool Micromouse::SolveMaze(void)
 {
-    // TODO: Determine if need to actually calibrate this at start. Currently it's only
-    //       being used for centering in cell.  Could also use as an offset to the mapping
-    //       defined by sensors class.
-    right_wall_calibrated_distance = sensors.Calibrate();
+    // Since we're in the first cell we know we're centered in the cell and have walls
+    // on each side.  This means we can calibrate the side sensors to some known distance.
+    CalibrateSensors();
 
     maze.get_cell(current_position)->set_visited(true);
 
@@ -177,7 +179,6 @@ bool Micromouse::SolveMaze(void)
 
 } // Micromouse::SolveMaze()
 
-
 /*****************************************************************************
 * Function: SetupNextCheckpoint
 *
@@ -211,7 +212,6 @@ void Micromouse::SetupNextCheckpoint(void)
 
 } // Micromouse::SetupNextCheckpoint()
 
-
 /*****************************************************************************
 * Function: CalculateDistanceToCenterOfCell
 *
@@ -244,7 +244,6 @@ float Micromouse::CalculateDistanceToCenterOfCell
     return distance_to_middle_of_cell;
 
 } // Micromouse::CalculateDistanceToCenterOfCell()
-
 
 /*****************************************************************************
 * Function: TravelForward
@@ -350,13 +349,9 @@ void Micromouse::UpdateNetLocation
 *****************************************************************************/
 void Micromouse::UpdateWalls(void)
 {
-    float right_side_distance = sensors.ReadDistance(sensor_id_right);
-    float left_side_distance  = sensors.ReadDistance(sensor_id_left);
-    float front_distance      = sensors.ReadDistance(sensor_id_front);
-
-    bool is_wall_on_right = right_side_distance <= thresholds.side;
-    bool is_wall_on_left  = left_side_distance  <= thresholds.side;
-    bool is_wall_in_front = front_distance      <= (thresholds.front + maze_evaluate_checkpoint_offset_distance);
+    bool is_wall_on_right = ReadRightDistance() <= thresholds.side;
+    bool is_wall_on_left  = ReadLeftDistance()  <= thresholds.side;
+    bool is_wall_in_front = ReadFrontDistance() <= (thresholds.front + maze_evaluate_checkpoint_offset_distance);
 
     if (!know_original_heading)
     {
@@ -382,7 +377,6 @@ void Micromouse::UpdateWalls(void)
     }
 
 } // Micromouse::UpdateWalls()
-
 
 /*****************************************************************************
 * Function: DetermineOriginalHeading
@@ -429,7 +423,6 @@ bool Micromouse::DetermineOriginalHeading
 
 } // Micromouse::DetermineOriginalHeading()
 
-
 /*****************************************************************************
 * Function: Center
 *
@@ -469,7 +462,6 @@ void Micromouse::Center(void)
 
 } // Micromouse::Center()
 
-
 /*****************************************************************************
 * Function: MeasureDistanceToRightWall
 *
@@ -479,8 +471,8 @@ void Micromouse::Center(void)
 *****************************************************************************/
 float Micromouse::MeasureDistanceToRightWall(void)
 {
-    float right_side_distance = sensors.ReadDistance(sensor_id_right);
-    float left_side_distance  = sensors.ReadDistance(sensor_id_left);
+    float right_side_distance = ReadRightDistance();
+    float left_side_distance  = ReadLeftDistance();
 
     bool is_wall_on_right = right_side_distance <= thresholds.side;
     bool is_wall_on_left  = left_side_distance  <= thresholds.side;
@@ -497,13 +489,13 @@ float Micromouse::MeasureDistanceToRightWall(void)
     }
     else // No walls to use for balancing.
     {
-        distance_to_wall = right_wall_calibrated_distance;
+        // TODO try to make this better by using current position / heading.
+        distance_to_wall = maze.get_cell_length() / 2.f;
     }
 
     return distance_to_wall;
 
 } // Micromouse::MeasureDistanceToRightWall()
-
 
 /*****************************************************************************
 * Function: FindNextPathSegment
@@ -521,7 +513,6 @@ void Micromouse::FindNextPathSegment(void)
     SetupTargetCell(cells_to_travel, next_heading);
 
 } // Micromouse::FindNextPathSegment()
-
 
 /*****************************************************************************
 * Function: SetupTargetCell
@@ -561,7 +552,6 @@ void Micromouse::SetupTargetCell
     this->target_cell = new_target;
 
 } // Micromouse::SetupTargetCell()
-
 
 /*****************************************************************************
 * Function: EvaluateMaze
@@ -666,6 +656,77 @@ position_t Micromouse::ForwardPosition
     return forward_cell;
 
 } // Micromouse::ForwardPosition()
+
+/*****************************************************************************
+* Function: CalibrateSensors
+*
+* Description: Corrects for any constant offsets in direct sensor readings.
+*              Should only be called when perfectly centered in cell and have
+*              walls on both sides.
+*****************************************************************************/
+void Micromouse::CalibrateSensors(void)
+{
+    float desired_side_reading = maze.get_cell_length() / 2.f - sensor_offsets.side;
+
+    sensors.CalibrateSensor(sensor_id_right, desired_side_reading);
+    sensors.CalibrateSensor(sensor_id_left,  desired_side_reading);
+
+} // Micromouse::CalibrateSensors()
+
+/*****************************************************************************
+* Function: ReadRightDistance
+*
+* Description: Returns measured distance on right side to center of robot.
+*****************************************************************************/
+inline float Micromouse::ReadRightDistance(void)
+{
+    return sensors.ReadDistance(sensor_id_right) + sensor_offsets.side;
+
+} // Micromouse::ReadRightDistance()
+
+/*****************************************************************************
+* Function: ReadLeftDistance
+*
+* Description: Returns measured distance on left side to center of robot.
+*****************************************************************************/
+inline float Micromouse::ReadLeftDistance(void)
+{
+    return sensors.ReadDistance(sensor_id_left) + sensor_offsets.side;
+
+} // Micromouse::ReadLeftDistance()
+
+/*****************************************************************************
+* Function: ReadFrontDistance
+*
+* Description: Returns front measured distance to center of robot.
+*****************************************************************************/
+inline float Micromouse::ReadFrontDistance(void)
+{
+    return sensors.ReadDistance(sensor_id_front) + sensor_offsets.front;
+
+} // Micromouse::ReadFrontDistance()
+
+/*****************************************************************************
+* Function: ReadRightDiagonalDistance
+*
+* Description: Returns measured distance on right diagonal side to center of robot.
+*****************************************************************************/
+inline float Micromouse::ReadRightDiagonalDistance(void)
+{
+    return sensors.ReadDistance(sensor_id_front_ne) + sensor_offsets.diagonal;
+
+} // Micromouse::ReadRightDiagonalDistance()
+
+/*****************************************************************************
+* Function: ReadLeftDiagonalDistance
+*
+* Description: Returns measured distance on left diagonal side to center of robot.
+*****************************************************************************/
+inline float Micromouse::ReadLeftDiagonalDistance(void)
+{
+    return sensors.ReadDistance(sensor_id_front_nw) + sensor_offsets.diagonal;
+
+} // Micromouse::ReadLeftDiagonalDistance()
 
 /*****************************************************************************
 * Function: CapPositionToMazeSize

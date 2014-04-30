@@ -28,6 +28,16 @@
 #define  TURNING_SPEED         (30.f) // degrees / second
 
 /*---------------------------------------------------------------------------------------
+*                                 SENSOR OFFSETS
+*--------------------------------------------------------------------------------------*/
+
+// All offsets are in centimeters.
+// TODO: Measure these.
+#define  SENSOR_OFFSET_FRONT     (5.f)
+#define  SENSOR_OFFSET_SIDE      (5.f)
+#define  SENSOR_OFFSET_DIAGONAL  (5.f)
+
+/*---------------------------------------------------------------------------------------
 *                             WALL THRESHOLD OFFSETS
 *--------------------------------------------------------------------------------------*/
 

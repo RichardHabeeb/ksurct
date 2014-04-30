@@ -39,6 +39,14 @@ typedef struct
     float front;
 } wall_threshold_t;
 
+// Contains the offsets of the sensors to the center of the robot.
+typedef struct
+{
+    float side;     // Offset from the front of the side sensor
+    float diagonal; // Offset from the front of the diagonal sensor
+    float front;    // Offset from the front of the front sensor
+} sensor_offset_t;
+
 // Information regarding the current target cell that we need to get to.
 typedef struct
 {
@@ -81,6 +89,7 @@ public: // methods
             PairedMotors            & motors,               // Differential paired motors.
             PID                     & centering_controller, // Controller for staying in middle of cell.
             wall_threshold_t  const & thresholds,           // Maximum distances from center of cell for a wall to be detected.
+            sensor_offset_t   const & sensor_offsets,       // The offset of each sensor to the center of the robot.
             float                     travelling_speed,     // Speed to move through maze (centimeters / second)
             float                     turning_speed         // Rotational turning speed of robot (degrees / second)
         );
@@ -194,6 +203,18 @@ private: // methods
             position_t * cell // Reference to cell to cap.
         );
 
+    // Corrects for any constant offsets in direct sensor readings. Should only be called
+    // when perfectly centered in cell and have walls on both sides.
+    void CalibrateSensors(void);
+
+    // Reading functions that account for distance to center of robot. Should always be
+    // used instead of directly reading in from sensors.
+    inline float ReadRightDistance(void);
+    inline float ReadLeftDistance(void);
+    inline float ReadFrontDistance(void);
+    inline float ReadRightDiagonalDistance(void);
+    inline float ReadLeftDiagonalDistance(void);
+
 private: // fields
 
     bool in_middle; // Set to true if currently in one of middle maze cells.
@@ -209,6 +230,9 @@ private: // fields
 
     // Reference to motors that share the same axis of rotation. (Side by side)
     PairedMotors & motors;
+
+     // The offset of each sensor to the center of the robot.
+    sensor_offset_t sensor_offsets;
 
     // Maximum distances from center of cell for a wall to be detected.
     wall_threshold_t thresholds;

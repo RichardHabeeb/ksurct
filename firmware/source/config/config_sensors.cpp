@@ -40,7 +40,6 @@
 IDistanceSensors * configure_distance_sensors(void)
 {
     IDistanceSensors * distance_sensors = NULL;
-    IRsensor_offset_t offsets;
 
     if (USE_SIMULATED_SENSORS)
     {
@@ -50,11 +49,11 @@ IDistanceSensors * configure_distance_sensors(void)
     {
         if (SENSOR_SIDE_TYPE == TWO_SIDED_SENSOR_TYPE)
         {
-            distance_sensors = new IRSensors(POWERLION, offsets);
+            distance_sensors = new IRSensors(POWERLION);
         }
         else if (SENSOR_SIDE_TYPE == ONE_SIDED_SENSOR_TYPE)
         {
-            distance_sensors = new IRSensors(BABY_KITTEN, offsets);
+            distance_sensors = new IRSensors(BABY_KITTEN);
         }
     }
 

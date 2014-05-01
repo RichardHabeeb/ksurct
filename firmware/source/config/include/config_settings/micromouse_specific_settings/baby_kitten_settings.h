@@ -22,10 +22,10 @@
 #define  MOTOR_TYPE            (STEPPER_MOTOR_TYPE)
 #define  SENSOR_SIDE_TYPE      (ONE_SIDED_SENSOR_TYPE)
 #define  MAZE_SOLVER           (SIMPLE_FLOOD_FILL_SOLVER)
-#define  WHEEL_BASE            (9.f) // centimeters
-#define  WHEEL_DIAMETER        (3.f) // centimeters
-#define  TRAVELLING_SPEED      (18.f) // centimeters / second
-#define  TURNING_SPEED         (30.f) // degrees / second
+#define  WHEEL_BASE            (9.27f) // centimeters
+#define  WHEEL_DIAMETER        (3.1f)   // centimeters
+#define  TRAVELLING_SPEED      (5.f)   // centimeters / second
+#define  TURNING_SPEED         (5.f)   // degrees / second
 
 /*---------------------------------------------------------------------------------------
 *                              WALL THRESHOLD OFFSETS

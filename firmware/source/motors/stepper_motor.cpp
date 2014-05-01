@@ -290,11 +290,11 @@ void StepperMotor::SetDirection
 {
     if (new_direction == drive_forward)
     {
-        direction_pin.WriteLow();
+        direction_pin.WriteHigh();
     }
     else
     {
-        direction_pin.WriteHigh();
+        direction_pin.WriteLow();
     }
 
     current_direction = new_direction;

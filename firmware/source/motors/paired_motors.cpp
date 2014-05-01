@@ -124,8 +124,8 @@ void PairedMotors::ZeroPointTurn
     float center_robot_distance_travelled = 0.f;
     while (center_robot_distance_travelled < distance_to_turn)
     {
-        center_robot_distance_travelled = fabs(right_motor->get_current_distance()) +
-                                          fabs(left_motor->get_current_distance())
+        center_robot_distance_travelled = (fabs(right_motor->get_current_distance()) +
+                                           fabs(left_motor->get_current_distance()))
                                            / 2.f;
     }
 
@@ -147,40 +147,40 @@ void PairedMotors::ArcTurn
     )
 {
     float distance_to_turn = turn_radius * (turn_angle * PI / 180.f);
-    
+
     // Reset the current distance so we know how far we have turned
     right_motor->reset_current_distance();
     left_motor->reset_current_distance();
-    
-    float arc_turn_factor = (((turn_radius + wheel_2_wheel_distance / 2.f) 
-                                          / turn_radius) - 1.f); 
-    
-    float current_center_speed = (right_motor->get_commanded_velocity() + 
+
+    float arc_turn_factor = (((turn_radius + wheel_2_wheel_distance / 2.f)
+                                          / turn_radius) - 1.f);
+
+    float current_center_speed = (right_motor->get_commanded_velocity() +
                             left_motor->get_commanded_velocity()) / 2.f;
-    
+
     // Velocity difference between wheel and velocity of robot
     float delta_velocity = current_center_speed * arc_turn_factor;
 
     if (new_direction == turn_right)
     {
-        left_motor->AddVelocity(delta_velocity);       
-        right_motor->AddVelocity(-delta_velocity);          
-    }                                                                
-    else if (new_direction == turn_left)                             
+        left_motor->AddVelocity(delta_velocity);
+        right_motor->AddVelocity(-delta_velocity);
+    }
+    else if (new_direction == turn_left)
     {
         right_motor->AddVelocity(delta_velocity);
         left_motor->AddVelocity(-delta_velocity);
     }
-   
+
     float distance_travelled = 0.f;
-    
+
     // Wait until you've finished your turn
     while (distance_travelled < distance_to_turn)
     {
-        distance_travelled = (right_motor->get_current_distance() + 
+        distance_travelled = (right_motor->get_current_distance() +
                                 left_motor->get_current_distance()) / 2.f;
     }
-    
+
 } // PairedMotors::ArcTurn()
 
 /******************************************************************************

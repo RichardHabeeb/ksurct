@@ -21,6 +21,7 @@
 #include "motor_callbacks.h"
 #include "timer_interrupt_oc.h"
 #include "stepper_motor.h"
+#include "util_math.h"
 #include "velocity_controller.h"
 
 /*---------------------------------------------------------------------------------------
@@ -79,7 +80,12 @@ static void configure_stepper_motors
     uint8_t pulses_per_step            = PULSES_PER_STEP;
     bool    acceleration_enabled       = ACCELERATION_ENABLED;
     float   acceleration_time_constant = ACCELERATION_TIME_CONSTANT;
+    float   acceleration_ref_speed     = ACCELERATION_REF_SPEED;
     float   velocity_update_inc        = VELOCITY_UPDATE_INCREMENT;
+
+    // Calculate acceleration in full steps per seconds^2.
+    float acceleration = AbsoluteValue(acceleration_ref_speed) / acceleration_time_constant;
+    acceleration *= full_steps_per_revolution / (wheel_diameter * PI);
 
     // Instantiate output compare timer to step the motors (still need to be initialized)
     static TimerInterruptOC timer(TIM3, TIM3_IRQn, RCC_APB1Periph_TIM3, (SystemCoreClock/4), 50000);
@@ -108,7 +114,7 @@ static void configure_stepper_motors
                                                           full_steps_per_revolution,
                                                           pulses_per_step,
                                                           acceleration_enabled,
-                                                          acceleration_time_constant,
+                                                          acceleration,
                                                           velocity_update_inc,
                                                           SetRightAcceleration);
 
@@ -121,7 +127,7 @@ static void configure_stepper_motors
                                                          full_steps_per_revolution,
                                                          pulses_per_step,
                                                          acceleration_enabled,
-                                                         acceleration_time_constant,
+                                                         acceleration,
                                                          velocity_update_inc,
                                                          SetLeftAcceleration);
 

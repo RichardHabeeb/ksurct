@@ -166,7 +166,7 @@ private: // fields
 
     uint32_t current_speed; // Full steps per second
     uint32_t target_speed;  // Full steps per second
-    float    acceleration;  // Full steps per seconds squared
+    float    acceleration;  // Full steps per seconds^2
     int64_t  total_steps;   // Number of steps since initialization (NOT necessarily full steps)
     int32_t  current_steps; // Number of steps since last speed change (NOT necessarily full steps)
 

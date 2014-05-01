@@ -56,7 +56,7 @@ StepperMotor::StepperMotor
         float           full_steps_per_revolution,  // How many full steps needed to rotate wheel once.
         uint8_t         pulses_per_step,            // Ie 2 for half stepping, 16 for 1/16th stepping, etc.
         bool            acceleration_enabled,       // Whether or not to use acceleration logic.
-        float           acceleration_time_constant, // How long to accelerate to target speed. (seconds)
+        float           acceleration,               // In full steps per seconds^2
         float           velocity_update_inc,        // How many full steps to update by when accelerating.
         accelerator_t   accel_function_pointer      // Acceleration callback function used to change ISR frequency.
     ) :
@@ -69,7 +69,7 @@ StepperMotor::StepperMotor
     this->accel_function_pointer     = accel_function_pointer;
     this->pulses_per_step            = pulses_per_step;
     this->acceleration_enabled       = acceleration_enabled;
-    this->acceleration_time_constant = acceleration_time_constant;
+    this->acceleration               = acceleration;
     this->velocity_update_inc        = velocity_update_inc;
 
     // Number of steps need for the wheel to make one full rotation
@@ -89,7 +89,6 @@ StepperMotor::StepperMotor
     this->update_total_steps = true;
     this->current_speed = 0;
     this->target_speed  = 0;
-    this->acceleration  = 0;
     this->total_steps   = 0;
     this->current_steps = 0;
 
@@ -314,10 +313,6 @@ void StepperMotor::SetTargetSpeed
     )
 {
     target_speed = new_speed;
-
-    // Calculate new 'speed change' value that the current speed will be incremented by
-    // every ISR if acceleration is enabled.
-    acceleration = (target_speed - current_speed) / acceleration_time_constant;
 
     // Need to update 'accelerator' ISR frequency that is in charge of updating stepping
     // frequency.

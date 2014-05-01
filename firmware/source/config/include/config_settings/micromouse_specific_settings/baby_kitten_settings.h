@@ -67,6 +67,7 @@
 #define  PULSES_PER_STEP              (16)     // Ie 2 for half stepping, 16 for 1/16th stepping, etc.
 #define  ACCELERATION_ENABLED         (true)   // Whether or not to use acceleration logic.
 #define  ACCELERATION_TIME_CONSTANT   (.5f)    // How long to accelerate to target speed. (seconds)
+#define  ACCELERATION_REF_SPEED       (20.f)   // What speed to reach after the acceleration time constant (cm/sec)
 #define  VELOCITY_UPDATE_INCREMENT    (1.f)    // How many full steps to update by when accelerating.
 
 #endif // BABY_KITTEN_SETTINGS_INCLUDED_H

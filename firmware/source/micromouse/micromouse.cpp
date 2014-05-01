@@ -88,8 +88,6 @@ Micromouse::Micromouse
 
     num_maze_solves = 0;
 
-    right_wall_calibrated_distance = 0.f;
-
     starting_x_distance = 5.0f;
     starting_y_distance = maze.get_cell_length() / 2.f;
 
@@ -271,7 +269,6 @@ void Micromouse::TravelForward
     motors.reset_current_distance();
 
     // Start wheels spinning forward (might already be moving forward)
-    // This will also reset the current distance travelled reported by motors.
     motors.Drive(travelling_speed);
 
     while (forward_distance < distance_to_travel)
@@ -281,12 +278,12 @@ void Micromouse::TravelForward
         float right_distance = motors.get_right_motor().get_current_distance();
         float left_distance  = motors.get_left_motor().get_current_distance();
 
-        // Estimate where robot is pointing.  Since this is information is needed elsewhere
-        // (such as turning) it is a field. The angle is referenced from 0 radians being in
-        // from of robot.  Increases clockwise.
+        // Estimate where robot is pointing.  Since this information is needed elsewhere
+        // (such as turning) it is a class field. The angle is referenced from 0 radians
+        // being in front of the robot.  Increases clockwise.
         // From small angle approximation for arcs then applying law of cosines.
         // http://en.wikipedia.org/wiki/Odometry
-        forward_angle = (PI / 2.f) - acosf((right_distance - left_distance) / (2.f * motors.get_wheel_base_distance()));
+        forward_angle = (PI / 2.f) - acosf((left_distance - right_distance) / (2.f * motors.get_wheel_base_distance()));
 
         // Calculate how far forward each wheel has travelled since last time.
         float delta_right_distance = right_distance - last_right_distance;
@@ -295,15 +292,17 @@ void Micromouse::TravelForward
         // Calculate incremental distance that center of robot has moved.
         float delta_distance_travelled = fabs(delta_right_distance + delta_left_distance) / 2.f;
 
-        forward_distance += delta_distance_travelled * cosf(forward_angle);
-        lateral_distance += delta_distance_travelled * sinf(forward_angle);
+        forward_distance = delta_distance_travelled * cosf(forward_angle);
+        lateral_distance = delta_distance_travelled * sinf(forward_angle);
+
+        // Need to do this constantly in case we lose both walls for balancing then can
+        // still estimate how far we are from center of cell using net location.
+        UpdateNetLocation(forward_distance, lateral_distance);
 
         // Save values so next time through loop can remember how far we've travelled.
         last_right_distance = right_distance;
         last_left_distance  = left_distance;
     }
-
-    UpdateNetLocation(forward_distance, lateral_distance);
 
 } // Micromouse::TravelForward()
 
@@ -448,7 +447,7 @@ void Micromouse::Center(void)
 
         float measured_distance = MeasureDistanceToRightWall();
 
-        float commanded_distance = right_wall_calibrated_distance;
+        float commanded_distance = maze.get_cell_length() / 2.f;
 
         float distance_error = commanded_distance - measured_distance;
 
@@ -489,8 +488,26 @@ float Micromouse::MeasureDistanceToRightWall(void)
     }
     else // No walls to use for balancing.
     {
-        // TODO try to make this better by using current position / heading.
-        distance_to_wall = maze.get_cell_length() / 2.f;
+        // Estimate distance to right wall using net location information.
+        cardinal_t right_side_heading = ConvertToHeading(right, current_heading);
+        float cell_length =  maze.get_cell_length();
+
+        // TODO: investigate that remainderf does what I expect.
+        switch (right_side_heading)
+        {
+            case north:
+                distance_to_wall = remainderf(net_y_distance, cell_length);
+                break;
+            case south:
+                distance_to_wall = cell_length - remainderf(net_y_distance, cell_length);
+                break;
+            case west:
+                distance_to_wall = remainderf(net_x_distance, cell_length);
+                break;
+            case east:
+                distance_to_wall = cell_length - remainderf(net_x_distance, cell_length);
+                break;
+        }
     }
 
     return distance_to_wall;
@@ -601,9 +618,6 @@ void Micromouse::Turn
 
     // Turning is our reset case for heading used for odometry.
     forward_angle = 0.f;
-
-    // Since we turned we now want to start summation error back to zero.
-    centering_controller.reset_integral_error();
 
 } // Micromouse::Turn()
 

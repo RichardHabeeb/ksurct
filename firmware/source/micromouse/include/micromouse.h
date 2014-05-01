@@ -256,10 +256,6 @@ private: // fields
     // How many time micromouse has reach middle.
     uint8_t num_maze_solves;
 
-    // Measure in first cell before solving maze.  This is the distance that the centering
-    // controller tries to maintain.
-    float right_wall_calibrated_distance;
-
     // Net distance travelled east and south in centimeters.  Defines absolute position
     // in maze (not just what cell we're in).
     float net_x_distance;

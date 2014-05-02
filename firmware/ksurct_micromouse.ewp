@@ -2075,6 +2075,9 @@
           <name>$PROJ_DIR$\source\utility\include\timer_interrupt_oc.h</name>
         </file>
         <file>
+          <name>$PROJ_DIR$\source\utility\include\util_assert.h</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\source\utility\include\util_math.h</name>
         </file>
       </group>
@@ -2092,6 +2095,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\utility\timer_interrupt_oc.cpp</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\utility\util_assert.cpp</name>
       </file>
     </group>
     <file>

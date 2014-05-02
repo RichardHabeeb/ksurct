@@ -46,8 +46,6 @@ public: // methods
         (
             OutputPin     & step_pin,
             OutputPin     & direction_pin,
-            OutputPin     & enable_pin,
-            OutputPin     & reset_pin,
             OutputPin     & micro_select_1_pin,         // Controls microstepping mode.
             OutputPin     & micro_select_2_pin,         // Controls microstepping mode.
             OutputPin     & micro_select_3_pin,         // Controls microstepping mode.
@@ -131,8 +129,6 @@ private: // fields
     // Motor control pins.
     OutputPin & step_pin;
     OutputPin & direction_pin;
-    OutputPin & enable_pin;
-    OutputPin & reset_pin;
     OutputPin & micro_select_1_pin;
     OutputPin & micro_select_2_pin;
     OutputPin & micro_select_3_pin;
@@ -170,7 +166,7 @@ private: // fields
 
     uint32_t current_speed; // Full steps per second
     uint32_t target_speed;  // Full steps per second
-    float    acceleration;  // Full steps per seconds squared
+    float    acceleration;  // Full steps per seconds^2
     int64_t  total_steps;   // Number of steps since initialization (NOT necessarily full steps)
     int32_t  current_steps; // Number of steps since last speed change (NOT necessarily full steps)
 

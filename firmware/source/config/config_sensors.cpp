@@ -18,6 +18,7 @@
 #include "private_system_config.h"
 #include "simulated_ir_sensors.h"
 #include "test_maze_creator.h"
+#include "util_assert.h"
 
 /*---------------------------------------------------------------------------------------
 *                                        TYPES
@@ -39,7 +40,6 @@
 IDistanceSensors * configure_distance_sensors(void)
 {
     IDistanceSensors * distance_sensors = NULL;
-    IRsensor_offset_t offsets;
 
     if (USE_SIMULATED_SENSORS)
     {
@@ -49,15 +49,16 @@ IDistanceSensors * configure_distance_sensors(void)
     {
         if (SENSOR_SIDE_TYPE == TWO_SIDED_SENSOR_TYPE)
         {
-            distance_sensors = new IRSensors(POWERLION, offsets);
+            distance_sensors = new IRSensors(POWERLION);
         }
         else if (SENSOR_SIDE_TYPE == ONE_SIDED_SENSOR_TYPE)
         {
-            distance_sensors = new IRSensors(BABY_KITTEN, offsets);
+            distance_sensors = new IRSensors(BABY_KITTEN);
         }
     }
 
-    // TODO: Assert pointer is non-null
+    assert(distance_sensors != NULL, ASSERT_STOP);
+
     return distance_sensors;
 
 } // configure_distance_sensors()

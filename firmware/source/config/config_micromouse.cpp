@@ -59,8 +59,11 @@ Micromouse * configure_micromouse(void)
     wall_thresholds.front     = (maze->get_cell_length() / 2.f) + WALL_TRESHOLD_OFFSET_FRONT;
     wall_thresholds.side      = (maze->get_cell_length() / 2.f) + WALL_TRESHOLD_OFFSET_SIDE;
     // TODO: Think through what the diagonal distance needs to be.  Whether or not we
-    // want to try to correct the actually distance in curve or handle it here.
+    // want to try to correct the actual distance in mapping curve or handle it here.
     wall_thresholds.diagonal  = (maze->get_cell_length()) + WALL_TRESHOLD_OFFSET_DIAGONAL;
+
+    // Stored offsets from sensor to center of robot.
+    sensor_offset_t sensor_offsets = { SENSOR_OFFSET_SIDE, SENSOR_OFFSET_FRONT, SENSOR_OFFSET_DIAGONAL };
 
     distance_sensors->Initialize();
 
@@ -81,7 +84,9 @@ Micromouse * configure_micromouse(void)
                                              *paired_motors,
                                              centering_pid,
                                              wall_thresholds,
-                                             TRAVELLING_SPEED);
+                                             sensor_offsets,
+                                             TRAVELLING_SPEED,
+                                             TURNING_SPEED);
 
     if (USE_SIMULATED_SENSORS)
     {

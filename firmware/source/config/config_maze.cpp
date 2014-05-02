@@ -17,6 +17,7 @@
 #include "maze.h"
 #include "simplefloodfill.h"
 #include "test_maze_creator.h"
+#include "util_assert.h"
 #include "weightedpathfinding.h"
 
 /*---------------------------------------------------------------------------------------
@@ -56,7 +57,7 @@ Maze * configure_maze(void)
     maze->set_starting_cell(0, 0);
     maze->set_goal_cell(number_of_rows/2, number_of_columns/2);
 
-    // TODO: asssert maze is non-null
+    assert(maze != NULL, ASSERT_STOP);
 
     return maze;
 
@@ -83,7 +84,7 @@ IPathFinder * configure_path_finder
         path_finder = new WeightedPathfinding(maze);
     }
 
-    // TODO assert path finder isn't null
+    assert(path_finder != NULL, ASSERT_STOP);
 
     return path_finder;
 

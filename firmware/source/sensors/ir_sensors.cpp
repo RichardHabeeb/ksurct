@@ -64,17 +64,12 @@ static void TimerCallback( void );
 *****************************************************************************/
 IRSensors::IRSensors
     (
-        robot_identifier_t current_robot, // The robot that is curently being used
-        IRsensor_offset_t sensor_offsets  // The offset of each sensor to the center of the robot
+        robot_identifier_t current_robot // The robot that is curently being used
     )
 {
     this_robot = current_robot;
 
-    offsets[sensor_id_left]     = sensor_offsets.side_offset;
-    offsets[sensor_id_front_nw] = sensor_offsets.diagnal_offset;
-    offsets[sensor_id_front]    = sensor_offsets.front_offset;
-    offsets[sensor_id_front_ne] = sensor_offsets.diagnal_offset;
-    offsets[sensor_id_right]    = sensor_offsets.side_offset;
+    memset( calibration_offsets, 0, sizeof calibration_offsets );
 
     switch( this_robot )
     {
@@ -116,14 +111,19 @@ bool IRSensors::isCalibrating( void )
 }
 
 /*****************************************************************************
-* Function: Calibrate
+* Function: CalibrateSensor
 *
-* Description: Reads many right sensor readings and takes the average of them
+* Description: Calculates difference between measured distance and the specified
+*              known distance that sensor should be at.  This error offset will be
+*              calculated and added in for every future reading of the sensor.
 *****************************************************************************/
-float IRSensors::Calibrate( void )
+void IRSensors::CalibrateSensor( sensor_id_t sensor_id, float known_distance )
 {
     int i;
-    float average_distance;
+    float total_reading;
+
+    // Number of times to sample specified sensor.
+    const uint32_t sampling_count = 250;
 
     // Keep timer from interfering with calibration
     // reading data outside of timers is done to speed up calibration
@@ -144,22 +144,22 @@ float IRSensors::Calibrate( void )
             asm( "nop" );
         }
 
-        for( i = 0; i< 250; i++ )
+        for( i = 0; i < sampling_count; i++ )
         {
             calibration_data_ready = false;
             ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
             while( !calibration_data_ready ) {};
-            average_distance += ( raw_readings[sensor_id_right] - ambiant_light[sensor_id_right] );
+            total_reading += ( raw_readings[ sensor_id ] - ambiant_light[ sensor_id ] );
         }
         emiter_gpio->ODR &= ~emiter_pins;
     }
     calibrating = false;
 
-    average_distance /= 250.0f;
-    average_distance *= ADC_TO_MV;
-    average_distance = 1.0f/average_distance;
+    float average_reading = total_reading / (float)sampling_count;
 
-    return( -269032.0f * average_distance * average_distance + 4556.5 * average_distance + 0.9883 + offsets[sensor_id_right] );
+    float measured_distance = ConvertToDistance( average_reading );
+
+    calibration_offsets[ sensor_id ] = known_distance - measured_distance;
 }
 
 /*****************************************************************************
@@ -172,12 +172,6 @@ void IRSensors::Initialize( void )
     GPIO_InitTypeDef  GPIO_InitStructure;
     switch( this_robot )
     {
-
-        case POWERLION:   // Enable clocks
-                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOB, ENABLE );
-                          // Intentional fallthrough - Powerlion emitter uses a
-                          //  clock that the Baby Kitten doesn't
-
         case BABY_KITTEN: // Enable clocks
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE );
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOC, ENABLE );
@@ -202,7 +196,33 @@ void IRSensors::Initialize( void )
                           GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
                           GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
                           GPIO_Init(GPIOC, &GPIO_InitStructure);
-                         break;
+                          break;
+
+        case POWERLION:   // Enable clocks
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE );
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOB, ENABLE );
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOC, ENABLE );
+                          RCC_APB2PeriphClockCmd( RCC_APB2Periph_ADC1, ENABLE );
+                          RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_DMA2, ENABLE );
+
+                          InitInterrupts();
+
+                          // Set up collector IO
+                          GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_4
+                                                          | GPIO_Pin_5
+                                                          | GPIO_Pin_6
+                                                          | GPIO_Pin_7;
+                          GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
+                          GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+                          GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+                          GPIO_Init( GPIOA, &GPIO_InitStructure);
+
+                          // Set up collector IO
+                          GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_4;
+                          GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AN;
+                          GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+                          GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+                          GPIO_Init(GPIOC, &GPIO_InitStructure);
 
         default: break;
     }
@@ -233,15 +253,13 @@ void IRSensors::Initialize( void )
 *
 * Description: Reads the distance measured by the sensor indicated in cm
 *****************************************************************************/
-float IRSensors::ReadDistance( sensor_id_t index )
+float IRSensors::ReadDistance( sensor_id_t id )
 {
-    float inv_x = 1.0f /(rolling_average[ index ] * ADC_TO_MV);
-
     switch( this_robot )
     {
         case BABY_KITTEN: // Temporary fallthrough
 
-        case POWERLION:   return( -269032.0f * inv_x * inv_x + 4556.5 * inv_x + 0.9883 + offsets[index] );
+        case POWERLION:   return ConvertToDistance( rolling_average[ id ] ) + calibration_offsets[ id ];
 
         default: break;
     }
@@ -359,11 +377,11 @@ void IRSensors::InitADC( void )
     uint8_t channels[number_of_sensors];
     switch( this_robot )
     {
-        case BABY_KITTEN: channels[0] = ADC_Channel_14;
-                          channels[1] = ADC_Channel_7;
-                          channels[2] = ADC_Channel_6;
-                          channels[3] = ADC_Channel_5;
-                          channels[4] = ADC_Channel_4;
+        case BABY_KITTEN: channels[0] = ADC_Channel_15;
+                          channels[1] = ADC_Channel_14;
+                          channels[2] = ADC_Channel_7;
+                          channels[3] = ADC_Channel_6;
+                          channels[4] = ADC_Channel_5;
                           break;
 
         case POWERLION:   channels[0] = ADC_Channel_14; //Front sensor channels
@@ -455,6 +473,26 @@ void IRSensors::InitInterrupts( void )
 
 
 /*****************************************************************************
+* Function: ConvertToDistance
+*
+* Description: Returns distance in centimeters corresponding to specified ADC value.
+*              No calibration offsets are added in.
+*****************************************************************************/
+inline float IRSensors::ConvertToDistance( float adc_value )
+{
+    // First convert reading to millivolts.
+    float mv = adc_value * ADC_TO_MV;
+
+    // Then take the inverse to be used in the mapping calculation.
+    // 'imv' = Inverse Milli Volts
+    float imv = 1.0f / mv;
+
+    return -269032.0f * imv * imv + 4556.5 * imv + 0.9883;
+
+} // ConvertToDistance()
+
+
+/*****************************************************************************
 * Function: SetInterruptCallback
 *
 * Description: Saves a reference to the instance of the passed in class so
@@ -476,12 +514,12 @@ static void SetInterruptCallback( IRSensors* sensor )
 /*****************************************************************************
 * Function: TimerCallback
 *
-* Description: Callback for the timmer interupt, this starts reading distances
+* Description: Callback for the timer interupt, this starts reading distances
 *              for each instance of ir sensors
 *             NOTE: This will eventually be called internally through
 *                   timer_interrupt_oc but currently all channels are taken
 *                   up by motors class, need support for more TIM ohannels to work.
-*                   For now call this from a timmer interupt
+*                   For now call this from a timer interupt
 *****************************************************************************/
 static void TimerCallback(void)
 {

@@ -256,10 +256,10 @@ void Micromouse::TravelForward
     )
 {
     // Current distance travelled not counting lateral error.
-    float forward_distance = 0.f;
+    float total_forward_distance = 0.f;
 
     // Current lateral distance. Positive to right of robot's forward direction.
-    float lateral_distance = 0.f;
+    float total_lateral_distance = 0.f;
 
     // Need variables to remember how far we travelled the previous time through the loop.
     float last_right_distance = 0.0f;
@@ -271,7 +271,7 @@ void Micromouse::TravelForward
     // Start wheels spinning forward (might already be moving forward)
     motors.Drive(travelling_speed);
 
-    while (forward_distance < distance_to_travel)
+    while (total_forward_distance < distance_to_travel)
     {
         this->Center();
 
@@ -292,12 +292,15 @@ void Micromouse::TravelForward
         // Calculate incremental distance that center of robot has moved.
         float delta_distance_travelled = fabs(delta_right_distance + delta_left_distance) / 2.f;
 
-        forward_distance = delta_distance_travelled * cosf(forward_angle);
-        lateral_distance = delta_distance_travelled * sinf(forward_angle);
+        float incremental_forward_distance = delta_distance_travelled * cosf(forward_angle);
+        float incremental_lateral_distance = delta_distance_travelled * sinf(forward_angle);
+
+        total_forward_distance += incremental_forward_distance;
+        total_lateral_distance += incremental_lateral_distance;
 
         // Need to do this constantly in case we lose both walls for balancing then can
         // still estimate how far we are from center of cell using net location.
-        UpdateNetLocation(forward_distance, lateral_distance);
+        UpdateNetLocation(incremental_forward_distance, incremental_lateral_distance);
 
         // Save values so next time through loop can remember how far we've travelled.
         last_right_distance = right_distance;

@@ -95,7 +95,7 @@ public: // methods
             float                     travelling_speed,     // Speed to move through maze (centimeters / second)
             float                     turning_speed         // Rotational turning speed of robot (degrees / second)
         );
-    
+
     // Check to see if the side sensors are covered
     bool CheckForCoveredSensors(void);
 
@@ -113,11 +113,10 @@ public: // methods
         (
             float distance_to_travel // In centimeters
         );
-    
+
     // Wait for user input via sensors to begin SolveMaze
     // A speed selection menu / destroy maze /  reset position
     void ConfigureRobotMenu(void);
-           
 
     // Setters
     void set_travelling_speed(float new_speed) { this->travelling_speed = new_speed; }
@@ -146,6 +145,12 @@ private: // methods
     float CalculateDistanceToCenterOfCell
         (
             position_t cell // Cell position to calculate distance to.
+        );
+
+    // Returns how far the robot is from next cell in the specified heading. (in centimeters)
+    float CalculateDistanceToNeighborCell
+        (
+            cardinal_t heading // Get to distance to next cell in this heading.
         );
 
     // Updates net centimeters travelled in each axes into maze with the specificied
@@ -215,9 +220,13 @@ private: // methods
             position_t * cell // Reference to cell to cap.
         );
 
+    bool IsWallReadingReliable(void);
+
     // Corrects for any constant offsets in direct sensor readings. Should only be called
     // when perfectly centered in cell and have walls on both sides.
     void CalibrateSensors(void);
+
+    void IsRightDistanceReliable(void);
 
     // Reading functions that account for distance to center of robot. Should always be
     // used instead of directly reading in from sensors.

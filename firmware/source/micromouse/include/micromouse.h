@@ -163,8 +163,8 @@ private: // methods
     // and walls that have been mapped as well as the current cell.
     bool DetermineOriginalHeading
         (
-            bool is_wall_on_right,
-            bool is_wall_on_left
+            bool & is_wall_on_right,
+            bool & is_wall_on_left
         );
 
     // Turns to face the specified heading while also taking into account any forward angle error.

@@ -58,6 +58,8 @@ public: // methods
         (
             sensor_id_t sensor_id
         );
+    
+    void TransposeMaze(void) { this->maze->Transpose(); }
 
     void set_maze(Maze & maze) { this->maze = &maze; }
     void set_micromouse(Micromouse & micromouse) { this->micromouse = &micromouse; }

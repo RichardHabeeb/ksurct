@@ -14,9 +14,12 @@
 #include <cstdio>
 #include <cstring>
 
+#include "config_settings.h"
 #include "micromouse.h"
+#include "simulated_ir_sensors.h"
 #include "system_timer.h"
 #include "util_math.h"
+
 
 /*---------------------------------------------------------------------------------------
 *                                   LITERAL CONSTANTS
@@ -389,8 +392,8 @@ void Micromouse::UpdateWalls(void)
 *****************************************************************************/
 bool Micromouse::DetermineOriginalHeading
     (
-        bool is_wall_on_right,
-        bool is_wall_on_left
+        bool & is_wall_on_right,
+        bool & is_wall_on_left
     )
 {
     // Can't just automatically update walls if we're not sure what our original
@@ -415,9 +418,18 @@ bool Micromouse::DetermineOriginalHeading
     if (!guessed_original_heading)
     {
         current_heading = original_heading;
+        
         Swap(current_position.x, current_position.y);
         Swap(net_x_distance, net_y_distance);
+        Swap(starting_x_distance, starting_y_distance);
+        Swap(is_wall_on_left, is_wall_on_right);
+        
         maze.Transpose();
+        
+        if (USE_SIMULATED_SENSORS)
+        {
+           ((SimulatedIRSensors&)sensors).TransposeMaze();
+        }
     }
 
     return know_original_heading;

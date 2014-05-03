@@ -58,13 +58,26 @@ public: // methods
             uint32_t        c
         );
 
+    // Returns true if a cell is the start cell (via reference comparison)
+    bool IsStartCell
+        (
+            Cell*
+        );
+
+    // Returns true if a cell is the start cell (calls ref comparison)
+    bool IsStartCell
+        (
+            uint32_t r,
+            uint32_t c
+        );
+    
     // Returns true if a cell is the goal cell (via reference comparison)
     bool IsGoalCell
         (
             Cell*
         );
 
-    // Returns true if a cell is the goal cell (via reference comparison)
+    // Returns true if a cell is the goal cell (calls ref comparison)
     bool IsGoalCell
         (
             uint32_t r,
@@ -84,15 +97,10 @@ public: // methods
             void (*func)(Cell*)
         );
 
-    // Once the maze has been solved we need to go back to the start cell.
-    void SwapStartingAndGoal(void);
-
     // Swap the row and column of every cell in the maze.
     void Transpose(void);
 
     void set_starting_cell (uint32_t r, uint32_t c) { starting_cell = cell_index[r][c]; }
-
-    void set_goal_cell (uint32_t r, uint32_t c ) { goal_cell = cell_index[r][c]; }
 
     Cell* get_cell
         (
@@ -107,7 +115,7 @@ public: // methods
 
     Cell* get_starting_cell(void) const { return starting_cell; }
 
-    Cell* get_goal_cell(void) const { return goal_cell; }
+    Cell* get_goal_cell(void) const { return goal_cells[0]; }
 
     // Returns side length of cell (assuming square cell) in centimeters.
     float get_cell_length(void) const { return this->cell_length; }
@@ -123,7 +131,7 @@ private: //methods
 private:
 
     Cell*    starting_cell;
-    Cell*    goal_cell;
+    Cell*    goal_cells[4];
     Cell***  cell_index;
 
     // Number of rows and columns of maze. Each dimension is at least one.

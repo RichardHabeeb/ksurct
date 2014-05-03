@@ -53,6 +53,7 @@ typedef struct
     position_t  position;         // Cell position in maze.
     bool        has_been_visited; // True if have already been to cell.
     bool        is_middle;        // True if cell is one of the middle cells.
+    bool        is_start;        // True if cell is 0,0.
     cardinal_t  next_heading;     // What direction to head after reaching cell.
                                   // Only valid if have already visited cell.
 } target_cell_t;
@@ -63,6 +64,7 @@ typedef enum
     maze_evaluate_checkpoint,
     turn_checkpoint,
     maze_solve_checkpoint,
+    return_to_start_checkpoint
 } checkpoint_type_t;
 
 /*---------------------------------------------------------------------------------------
@@ -153,6 +155,9 @@ private: // methods
 
     // Stops robot then performs special actions when finding middle of maze.
     void HandleMazeSolve(void);
+    
+    // Stops robot then performs special actions when returning to the outer edge
+    void HandleReturnToStart(void);
 
     // Updates maze will wall and location information and then finds next target cell
     // using maze solver.
@@ -175,8 +180,8 @@ private: // methods
     // and walls that have been mapped as well as the current cell.
     bool DetermineOriginalHeading
         (
-            bool & is_wall_on_right,
-            bool & is_wall_on_left
+            bool is_wall_on_right,
+            bool is_wall_on_left
         );
 
     // Turns to face the specified heading while also taking into account any forward angle error.

@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------------------
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
+#include "util_math.h"
 #include "ipathfinder.h"
 #include "maze.h"
 
@@ -54,9 +55,12 @@ public: //methods
 		heading_t*		next_heading, //out param of the next heading to travel
 		uint32_t*		cells_to_travel // out param of the number of cells to travel in the given direction
 	);
+    
+    // Make sure the AI knows whether we are going to the middle of the maze or back to the starting position
+    void FoundDestination(void);
 
-	char* ToString
-		(void);
+    // For debugging. Print the maze walls with cell data, will allocate memory on the heap
+	char* ToString(void);
 
 public: // fields
 
@@ -65,7 +69,7 @@ private: // methods
 
 	// Run a classic flooding algorithm to fill in the maze
 	uint32_t FloodFill(void);
-
+    
 	// create an instance of the cell data in each cell
 	static void InitializeCellData
 	(
@@ -81,6 +85,8 @@ private: // methods
 
 private: // fields
 	Maze*				m;
+    Cell*               target_cell;
+    Cell*               origin_cell;
 
 
 };

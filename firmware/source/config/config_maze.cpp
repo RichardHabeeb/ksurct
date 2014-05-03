@@ -54,9 +54,6 @@ Maze * configure_maze(void)
         maze = new Maze(number_of_rows, number_of_columns, cell_length);
     }
 
-    maze->set_starting_cell(0, 0);
-    maze->set_goal_cell(number_of_rows/2, number_of_columns/2);
-
     assert(maze != NULL, ASSERT_STOP);
 
     return maze;

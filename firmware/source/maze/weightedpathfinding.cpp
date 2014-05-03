@@ -121,7 +121,18 @@ void WeightedPathfinding::FindNextPathSegment
 	}
 	*next_heading = ((cell_data_t*)current_cell->get_data())->robot_heading_sim;
 
-} // FindNextPathSegment()
+} // WeightedPathfinding::FindNextPathSegment()
+
+/*****************************************************************************
+* Function: FoundDestination
+*
+* Description:	Keep track of whether the robot is going to the middle or
+*               going to the corner.
+*****************************************************************************/
+void WeightedPathfinding::FoundDestination(void)
+{
+    //TODO
+} //WeightedPathfinding::FoundDestination()
 
 /*****************************************************************************
 * Function: ToString

@@ -150,7 +150,7 @@ bool Micromouse::SolveMaze(void)
     // the cell that's going to be our initial target cell.
     EvaluateMaze();
 
-    while (!in_middle)
+    while (true)
     {
         // Determine distance to next checkpoint and what type of checkpoint it is.
         SetupNextCheckpoint();
@@ -172,11 +172,18 @@ bool Micromouse::SolveMaze(void)
                 break;
             case maze_solve_checkpoint:
                 HandleMazeSolve();
+                Turn(GetReverseHeading(current_heading));
+                EvaluateMaze();
+                break;
+            case return_to_start_checkpoint:
+                HandleReturnToStart();
+                Turn(GetReverseHeading(current_heading));
+                EvaluateMaze();
                 break;
         }
     }
 
-    return true;
+    //return true; Removing warning
 
 } // Micromouse::SolveMaze()
 
@@ -191,7 +198,13 @@ void Micromouse::SetupNextCheckpoint(void)
 {
     float distance_to_center_of_target_cell = CalculateDistanceToCenterOfCell(target_cell.position);
 
-    if (target_cell.is_middle)
+    if (target_cell.is_start && !maze.IsStartCell(current_position.y, current_position.x))
+    {
+        current_checkpoint_type = return_to_start_checkpoint;
+
+        distance_to_checkpoint = distance_to_center_of_target_cell;
+    }
+    else if (target_cell.is_middle && !maze.IsGoalCell(current_position.y, current_position.x))
     {
         current_checkpoint_type = maze_solve_checkpoint;
 
@@ -393,8 +406,8 @@ void Micromouse::UpdateWalls(void)
 *****************************************************************************/
 bool Micromouse::DetermineOriginalHeading
     (
-        bool & is_wall_on_right,
-        bool & is_wall_on_left
+        bool is_wall_on_right,
+        bool is_wall_on_left
     )
 {
     // Can't just automatically update walls if we're not sure what our original
@@ -422,7 +435,6 @@ bool Micromouse::DetermineOriginalHeading
         
         Swap(current_position.x, current_position.y);
         Swap(net_x_distance, net_y_distance);
-        Swap(starting_x_distance, starting_y_distance);
         Swap(is_wall_on_left, is_wall_on_right);
         
         maze.Transpose();
@@ -580,6 +592,7 @@ void Micromouse::SetupTargetCell
     }
 
     new_target.is_middle = maze.IsGoalCell(new_target.position.y, new_target.position.x);
+    new_target.is_start = maze.IsStartCell(new_target.position.y, new_target.position.x);
 
     this->target_cell = new_target;
 
@@ -653,10 +666,29 @@ void Micromouse::HandleMazeSolve(void)
     {
         maze.MapCenterSquareWalls(current_position.y, current_position.x, current_heading);
     }
+    
+    path_finder.FoundDestination();
 
     in_middle = true;
 
 } // Micromouse::HandleMazeSolve()
+
+/*****************************************************************************
+* Function: HandleReturnToStart
+*
+* Description:  Stops robot then performs special actions when returning
+*               to start.
+*****************************************************************************/
+void Micromouse::HandleReturnToStart(void)
+{
+    motors.Stop();
+
+    path_finder.FoundDestination();
+    
+    //INCREASE SPEED?
+
+} // Micromouse::HandleMazeSolve()
+
 
 /*****************************************************************************
 * Function: ForwardPosition

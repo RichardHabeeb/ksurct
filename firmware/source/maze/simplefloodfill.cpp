@@ -43,6 +43,9 @@ SimpleFloodFill::SimpleFloodFill
 {
 	m->Map(InitializeCellData);
 	this->m = m;
+    
+    target_cell = m->get_goal_cell();
+    origin_cell = m->get_starting_cell();
 } // SimpleFloodFill()
 
 
@@ -76,7 +79,6 @@ void SimpleFloodFill::FindNextPathSegment
 		uint32_t*		cells_to_travel         // out param of the number of cells to travel in the given direction
 	)
 {
-    Cell* goal_cell		        = m->get_goal_cell();
     Cell* current_cell          = m->get_cell(robot_current_row, robot_current_col);
     uint32_t depth		        = FloodFill();
     uint32_t current_cell_depth = *((int32_t*)current_cell->get_data());
@@ -122,13 +124,11 @@ void SimpleFloodFill::FindNextPathSegment
 *****************************************************************************/
 uint32_t SimpleFloodFill::FloodFill(void)
 {
-        Cell* start_cell		= m->get_starting_cell();
-        Cell* goal_cell		    = m->get_goal_cell();
         uint32_t depth			= 1;
 
         m->Map(SimpleFloodFill::ResetCellData);
 
-        *((int32_t*)goal_cell->get_data()) = 1;
+        *((int32_t*)target_cell->get_data()) = 1;
 
         while (++depth < MAX_FLOOD_DEPTH)
         {
@@ -146,7 +146,7 @@ uint32_t SimpleFloodFill::FloodFill(void)
                                                 if (adjacent_cell != _NULL && *((int32_t*)adjacent_cell->get_data()) == depth - 1)
                                                 {
                                                         *((int32_t*)search_cell->get_data()) = depth;
-                                                        if (search_cell == start_cell)
+                                                        if (search_cell == origin_cell)
                                                                 return depth;
                                                 }
                                         }
@@ -156,8 +156,18 @@ uint32_t SimpleFloodFill::FloodFill(void)
         }
 
 	return MAX_FLOOD_DEPTH;
-} // FloodFill()
+} // SimpleFloodFill::FloodFill()
 
+/*****************************************************************************
+* Function: FoundDestination
+*
+* Description:	Keep track of whether the robot is going to the middle or
+*               going to the corner.
+*****************************************************************************/
+void SimpleFloodFill::FoundDestination(void)
+{
+    Swap(target_cell, origin_cell);
+} // SimpleFloodFill::FoundDestination()
 
 /*****************************************************************************
 * Function: ToString

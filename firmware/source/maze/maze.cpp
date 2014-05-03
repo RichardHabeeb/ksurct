@@ -70,7 +70,10 @@ Maze::Maze
 	}
 
     this->starting_cell = get_cell(0, 0);
-    this->goal_cell     = get_cell(number_rows/2, number_columns/2);
+    this->goal_cells[0] = get_cell(number_rows/2, number_columns/2);
+    this->goal_cells[1] = get_cell(number_rows/2 - 1, number_columns/2);
+    this->goal_cells[2] = get_cell(number_rows/2,  number_columns/2 - 1);
+    this->goal_cells[2] = get_cell(number_rows/2 -1,  number_columns/2 - 1);
 
 } // Maze()
 
@@ -116,6 +119,37 @@ Cell* Maze::get_cell
 
 } // get_cell()
 
+
+/*****************************************************************************
+* Function: IsStartCell
+*
+* Description:
+*****************************************************************************/
+bool Maze::IsStartCell
+	(
+		uint32_t r,
+		uint32_t c
+	)
+{
+    return IsStartCell(cell_index[r][c]);
+    
+} // Maze::IsStartCell()
+
+/*****************************************************************************
+* Function: IsStartCell
+*
+* Description:
+*****************************************************************************/
+bool Maze::IsStartCell
+	(
+		Cell* c
+	)
+{
+    return c == this->get_starting_cell();
+    
+} // Maze::IsStartCell()
+
+
 /*****************************************************************************
 * Function: IsGoalCell
 *
@@ -127,7 +161,8 @@ bool Maze::IsGoalCell
 		uint32_t c
 	)
 {
-	return cell_index[r][c] == goal_cell;
+    return IsGoalCell(cell_index[r][c]);
+    
 } // IsGoalCell()
 
 /*****************************************************************************
@@ -140,7 +175,13 @@ bool Maze::IsGoalCell
 		Cell* c
 	)
 {
-	return c == goal_cell;
+    for(uint32_t i = 0; i < sizeof(goal_cells); i++)
+    {
+        if(c == goal_cells[i]) return true;
+    }
+    
+    return false;
+    
 } // IsGoalCell()
 
 /*****************************************************************************
@@ -156,18 +197,6 @@ bool Maze::IsValidCell
 {
 	return (r < number_rows && c < number_columns );
 }// IsValidCell()
-
-/*****************************************************************************
-* Function: SwapStartingAndGoal
-*
-* Description:
-*****************************************************************************/
-void Maze::SwapStartingAndGoal(void)
-{
-	Cell* t		= starting_cell;
-	starting_cell	= goal_cell;
-	goal_cell	= t;
-} // SwapStartingAndGoal()
 
 /*****************************************************************************
 * Function: Map

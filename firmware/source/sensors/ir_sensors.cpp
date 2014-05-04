@@ -68,6 +68,7 @@ IRSensors::IRSensors
     )
 {
     this_robot = current_robot;
+    calibrating = false;
 
     memset( calibration_offsets, 0, sizeof calibration_offsets );
 
@@ -255,16 +256,7 @@ void IRSensors::Initialize( void )
 *****************************************************************************/
 float IRSensors::ReadDistance( sensor_id_t id )
 {
-    switch( this_robot )
-    {
-        case BABY_KITTEN: // Temporary fallthrough
-
-        case POWERLION:   return ConvertToDistance( rolling_average[ id ] ) + calibration_offsets[ id ];
-
-        default: break;
-    }
-
-    return -1.0f;
+    return ConvertToDistance( rolling_average[ id ] ) + calibration_offsets[ id ];
 
 } // ReadDistance
 
@@ -487,7 +479,17 @@ inline float IRSensors::ConvertToDistance( float adc_value )
     // 'imv' = Inverse Milli Volts
     float imv = 1.0f / mv;
 
-    return -269032.0f * imv * imv + 4556.5 * imv + 0.9883;
+    switch( this_robot )
+    {
+        case BABY_KITTEN:
+            return -2000000.0f * imv * imv + 12436.0f * imv + 0.0252f;
+
+        case POWERLION:
+            return -269032.0f * imv * imv + 4556.5f * imv + 0.9883f;
+
+        default:
+            return -1.0f;
+    }
 
 } // ConvertToDistance()
 

@@ -482,10 +482,26 @@ inline float IRSensors::ConvertToDistance( float adc_value )
     switch( this_robot )
     {
         case BABY_KITTEN:
-            return -4000000.0f * imv * imv + 17847.0f * imv + 0.4792f;
+            // The peak of the equation, if mv gets belov this than distance starts to drop
+            if( mv < 449.0f )
+            {
+                return 100.0f;
+            }
+            else
+            {
+                return -4000000.0f * imv * imv + 17847.0f * imv - 0.4792f;
+            }
 
         case POWERLION:
-            return -269032.0f * imv * imv + 4556.5f * imv + 0.9883f;
+            // The peak of the equation, if mv gets belov this than distance starts to drop
+            if( mv < 119.0f )
+            {
+                return 100.0f;
+            }
+            else
+            {
+                return -269032.0f * imv * imv + 4556.5f * imv + 0.9883f;
+            }
 
         default:
             return -1.0f;

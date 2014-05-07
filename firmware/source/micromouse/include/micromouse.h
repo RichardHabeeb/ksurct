@@ -95,6 +95,9 @@ public: // methods
             float                     travelling_speed,     // Speed to move through maze (centimeters / second)
             float                     turning_speed         // Rotational turning speed of robot (degrees / second)
         );
+    
+    // Check to see if the side sensors are covered
+    bool CheckForCoveredSensors(void);
 
     // Attempts to find the middle of the maze.  Returns true if successful.
     // If want to resolve then should physically move to start cell and call
@@ -111,6 +114,11 @@ public: // methods
         (
             float distance_to_travel // In centimeters
         );
+    
+    // Wait for user input via sensors to begin SolveMaze
+    // A speed selection menu / destroy maze /  reset position
+    void ConfigureRobotMenu(void);
+           
 
     // Setters
     void set_travelling_speed(float new_speed) { this->travelling_speed = new_speed; }

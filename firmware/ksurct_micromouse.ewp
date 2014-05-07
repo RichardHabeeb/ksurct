@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.70.1.5793</state>
+          <state>6.70.2.6303</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1987,6 +1987,12 @@
       <name>micromouse</name>
       <group>
         <name>include</name>
+        <file>
+          <name>$PROJ_DIR$\source\micromouse\include\i_cell_modification.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\micromouse\include\maze_modification_history.h</name>
+        </file>
         <file>
           <name>$PROJ_DIR$\source\micromouse\include\micromouse.h</name>
         </file>

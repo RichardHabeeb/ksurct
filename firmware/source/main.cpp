@@ -55,13 +55,8 @@ int main(void)
     Micromouse * micromouse = configure_micromouse();
 
     system_timer.Initialize(1e6);
-
-    // Always wait 3 seconds after plugging in to give user time to move hands.
-    double time = system_timer.get_time();
-    while (system_timer.get_time() < time + 3.0);
-
-    //test_motors(micromouse->get_motors());
-    //test_sensors(micromouse->get_sensors());
+    
+    micromouse->ConfigureRobotMenu();
 
     while (true)
     {

@@ -40,6 +40,7 @@
 #define  PULSES_PER_STEP              (0)
 #define  ACCELERATION_ENABLED         (false)
 #define  ACCELERATION_TIME_CONSTANT   (0)
+#define  ACCELERATION_REF_SPEED       (0)
 #define  VELOCITY_UPDATE_INCREMENT    (0)
 
 #endif // STEPPER_MOTOR_CONSTANTS_GROUP

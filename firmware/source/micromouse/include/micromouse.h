@@ -100,9 +100,8 @@ public: // methods
     bool CheckForCoveredSensors(void);
 
     // Attempts to find the middle of the maze.  Returns true if successful.
-    // If want to resolve then should physically move to start cell and call
-    // ResetToStartingCell() before calling this again.
-    bool SolveMaze(void);
+    //   Once it does then will automatically go back to starting cell and re-solve it.
+    void SolveMaze(void);
 
     // Reset robot's orientation/position to that of the starting cell.
     void ResetToStartingCell(void);
@@ -163,7 +162,7 @@ private: // methods
 
     // Stops robot then performs special actions when finding middle of maze.
     void HandleMazeSolve(void);
-    
+
     // Stops robot then performs special actions when returning to the outer edge
     void HandleReturnToStart(void);
 

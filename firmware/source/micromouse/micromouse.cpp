@@ -91,7 +91,7 @@ Micromouse::Micromouse
 
     num_maze_solves = 0;
 
-    starting_x_distance = 5.0f;
+    starting_x_distance = 9.0f;
     starting_y_distance = maze.get_cell_length() / 2.f;
 
     net_x_distance = starting_x_distance;
@@ -136,19 +136,24 @@ void Micromouse::ResetToStartingCell(void)
 /*****************************************************************************
 * Function: SolveMaze
 *
-* Description: Attempts to find the middle of the maze.  Returns true if successful.
+* Description: Attempts to find the middle of the maze.  Once it does then will
+*              automatically go back to starting cell and re-solve it.
 *****************************************************************************/
-bool Micromouse::SolveMaze(void)
+void Micromouse::SolveMaze(void)
 {
     // Since we're in the first cell we know we're centered in the cell and have walls
     // on each side.  This means we can calibrate the side sensors to some known distance.
     CalibrateSensors();
 
-    maze.get_cell(current_position)->set_visited(true);
-
-    // Need to do an initial maze evaluation in order to get our bearings and determine
-    // the cell that's going to be our initial target cell.
-    EvaluateMaze();
+    // Map side walls since they should always be there by competition rules. Don't want
+    // to just call UpdateWalls() since there's a good chance we're not starting in the
+    // same position we're normally mapping walls at.  Could refactor UpdateWalls() to
+    // take into account net (x,y) position.
+    Cell * starting_cell = maze.get_cell(current_position);
+    starting_cell->set_visited(true);
+    starting_cell->set_wall(ConvertToHeading(right, current_heading));
+    starting_cell->set_wall(ConvertToHeading(left, current_heading));
+    FindNextPathSegment();
 
     while (true)
     {
@@ -188,8 +193,6 @@ bool Micromouse::SolveMaze(void)
                 break;
         }
     }
-
-    //return true; Removing warning
 
 } // Micromouse::SolveMaze()
 
@@ -438,13 +441,13 @@ bool Micromouse::DetermineOriginalHeading
     if (!guessed_original_heading)
     {
         current_heading = original_heading;
-        
+
         Swap(current_position.x, current_position.y);
         Swap(net_x_distance, net_y_distance);
         Swap(is_wall_on_left, is_wall_on_right);
-        
+
         maze.Transpose();
-        
+
         if (USE_SIMULATED_SENSORS)
         {
            ((SimulatedIRSensors&)sensors).TransposeMaze();
@@ -486,8 +489,8 @@ void Micromouse::Center(void)
 
         float delta_linear_speed = centering_controller.Calculate(distance_error, delta_time);
 
-        motors.get_right_motor().Drive(travelling_speed + delta_linear_speed);
-        motors.get_left_motor().Drive(travelling_speed - delta_linear_speed);
+        motors.get_right_motor().Drive(travelling_speed + (delta_linear_speed / 2.f));
+        motors.get_left_motor().Drive(travelling_speed - (delta_linear_speed / 2.f));
 
         last_centering_time = current_time;
     }
@@ -672,7 +675,7 @@ void Micromouse::HandleMazeSolve(void)
     {
         maze.MapCenterSquareWalls(current_position.y, current_position.x, current_heading);
     }
-    
+
     path_finder.FoundDestination();
 
     in_middle = true;
@@ -690,7 +693,7 @@ void Micromouse::HandleReturnToStart(void)
     motors.Stop();
 
     path_finder.FoundDestination();
-    
+
     //INCREASE SPEED?
 
 } // Micromouse::HandleMazeSolve()

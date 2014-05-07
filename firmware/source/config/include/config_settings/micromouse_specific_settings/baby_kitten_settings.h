@@ -50,7 +50,7 @@
 *                              CENTERING PID PARAMETERS
 *--------------------------------------------------------------------------------------*/
 
-#define CENTERING_PID_KP              (0.0f)
+#define CENTERING_PID_KP              (1.0f)
 #define CENTERING_PID_KI              (0.0f)
 #define CENTERING_PID_KD              (0.0f)
 #define CENTERING_PID_SAT_HIGH        (100.f)

@@ -60,10 +60,7 @@ int main(void)
 
     while (true)
     {
-        if (!micromouse->SolveMaze())
-        {
-            // :(
-        }
+        micromouse->SolveMaze();
     }
 
     // return 0; KLM: Remove warning: statement is unreachable.

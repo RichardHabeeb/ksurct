@@ -17,6 +17,7 @@
 #include "stm32f4xx_adc.h"
 #include "stm32f4xx_dma.h"
 #include "timer_interrupt_oc.h"
+#include "system_timer.h"
 
 /*---------------------------------------------------------------------------------------
 *                                   LITERAL CONSTANTS
@@ -120,47 +121,37 @@ bool IRSensors::isCalibrating( void )
 *****************************************************************************/
 void IRSensors::CalibrateSensor( sensor_id_t sensor_id, float known_distance )
 {
-    int i;
-    float total_reading = 0.0f;
+    float total_reading = 0.f;
 
-    // Number of times to sample specified sensor.
+    double total_calibration_time = 1.0;
     const uint32_t sampling_count = 250;
 
-    // Keep timer from interfering with calibration
-    // reading data outside of timers is done to speed up calibration
-    calibrating = true;
+    float delta_calibration_time = (float)( total_calibration_time / sampling_count );
+
+    double start_calibration_time = system_timer.get_time();
+
+    double current_time = start_calibration_time;
+
+    double last_reading_time = 0;
+
+    while( current_time < start_calibration_time + total_calibration_time )
     {
-        ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-        calibration_data_ready = false;
-        while( !calibration_data_ready ) {};
-        for( i = 0; i<number_of_sensors; i++ )
-        {
-            ambiant_light[i] = raw_readings[i];
-        }
-        emiter_gpio->ODR |= emiter_pins;
+        current_time = system_timer.get_time();
 
-        // Wait some time for emitters to come on
-        for( i = 0; i < 1000; i++ )
-        {
-            asm( "nop" );
-        }
+        // Calculate time between last sampling.
+        float delta_time = (float)(current_time - last_reading_time);
 
-        for( i = 0; i < sampling_count; i++ )
+        if( delta_time > delta_calibration_time )
         {
-            calibration_data_ready = false;
-            ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-            while( !calibration_data_ready ) {};
-            total_reading += ( raw_readings[ sensor_id ] - ambiant_light[ sensor_id ] );
+            total_reading += ReadDistance( sensor_id );
+            last_reading_time = current_time;
         }
-        emiter_gpio->ODR &= ~emiter_pins;
     }
-    calibrating = false;
 
     float average_reading = total_reading / (float)sampling_count;
 
-    float measured_distance = ConvertToDistance( average_reading );
+    calibration_offsets[sensor_id] = known_distance - average_reading;
 
-    calibration_offsets[ sensor_id ] = known_distance - measured_distance;
 }
 
 /*****************************************************************************
@@ -472,6 +463,12 @@ void IRSensors::InitInterrupts( void )
 *****************************************************************************/
 inline float IRSensors::ConvertToDistance( float adc_value )
 {
+    // Avoid division by zero.
+    if( adc_value == 0.f )
+    {
+        return 100.f;
+    }
+
     // First convert reading to millivolts.
     float mv = adc_value * ADC_TO_MV;
 

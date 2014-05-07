@@ -19,8 +19,8 @@
 *                                   SETTINGS
 *--------------------------------------------------------------------------------------*/
 
+#define  ROBOT                 (POWER_LION)
 #define  MOTOR_TYPE            (DC_BRUSHED_MOTOR_TYPE)
-#define  SENSOR_SIDE_TYPE      (TWO_SIDED_SENSOR_TYPE)
 #define  MAZE_SOLVER           (SIMPLE_FLOOD_FILL_SOLVER)
 #define  WHEEL_BASE            (7.f)  // centimeters
 #define  WHEEL_DIAMETER        (3.f)  // centimeters

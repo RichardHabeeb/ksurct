@@ -47,14 +47,7 @@ IDistanceSensors * configure_distance_sensors(void)
     }
     else
     {
-        if (SENSOR_SIDE_TYPE == TWO_SIDED_SENSOR_TYPE)
-        {
-            distance_sensors = new IRSensors(POWERLION);
-        }
-        else if (SENSOR_SIDE_TYPE == ONE_SIDED_SENSOR_TYPE)
-        {
-            distance_sensors = new IRSensors(BABY_KITTEN);
-        }
+        distance_sensors = new IRSensors(ROBOT);
     }
 
     assert(distance_sensors != NULL, ASSERT_STOP);

@@ -19,8 +19,8 @@
 *                                   SETTINGS
 *--------------------------------------------------------------------------------------*/
 
+#define  ROBOT                 (BABY_KITTEN)
 #define  MOTOR_TYPE            (STEPPER_MOTOR_TYPE)
-#define  SENSOR_SIDE_TYPE      (ONE_SIDED_SENSOR_TYPE)
 #define  MAZE_SOLVER           (SIMPLE_FLOOD_FILL_SOLVER)
 #define  WHEEL_BASE            (9.27f) // centimeters
 #define  WHEEL_DIAMETER        (3.1f)   // centimeters

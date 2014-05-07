@@ -44,6 +44,8 @@
 *****************************************************************************/
 Micromouse * configure_micromouse(void)
 {
+    configure_leds();
+
     Maze * maze = configure_maze();
 
     IPathFinder * path_finder = configure_path_finder(maze);

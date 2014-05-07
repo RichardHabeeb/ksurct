@@ -13,9 +13,10 @@
 
 #include <cstdio>
 
-#include "stm32f4xx.h"
+#include "led_references.h"
 #include "micromouse.h"
 #include "public_system_config.h"
+#include "stm32f4xx.h"
 #include "system_timer.h"
 
 /*---------------------------------------------------------------------------------------
@@ -43,6 +44,7 @@ SystemTimer system_timer;
 // Forward declarations.
 void test_motors(PairedMotors & motors);
 void test_sensors(IDistanceSensors & sensors);
+void test_leds(void);
 
 /*****************************************************************************
 * Function: main
@@ -55,7 +57,7 @@ int main(void)
     Micromouse * micromouse = configure_micromouse();
 
     system_timer.Initialize(1e6);
-    
+
     micromouse->ConfigureRobotMenu();
 
     while (true)
@@ -122,3 +124,42 @@ void test_sensors(IDistanceSensors & sensors)
     }
 
 } // test_sensors()
+
+/*****************************************************************************
+* Function: test_leds
+*
+* Description: TODO
+*****************************************************************************/
+void test_leds(void)
+{
+    double current_time = 0.0;
+    double delay_time = .5;
+
+    while (true)
+    {
+        front_directional_led->Toggle();
+        indicator_1_led->Toggle();
+
+        current_time = system_timer.get_time();
+        while (system_timer.get_time() < current_time + delay_time);
+
+        right_directional_led->Toggle();
+        indicator_2_led->Toggle();
+
+        current_time = system_timer.get_time();
+        while (system_timer.get_time() < current_time + delay_time);
+
+        back_directional_led->Toggle();
+        indicator_3_led->Toggle();
+
+        current_time = system_timer.get_time();
+        while (system_timer.get_time() < current_time + delay_time);
+
+        left_directional_led->Toggle();
+        indicator_4_led->Toggle();
+
+        current_time = system_timer.get_time();
+        while (system_timer.get_time() < current_time + delay_time);
+    }
+
+} // test_leds()

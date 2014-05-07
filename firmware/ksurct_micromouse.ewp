@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.70.2.6303</state>
+          <state>6.70.1.5793</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1907,12 +1907,18 @@
           </file>
         </group>
         <file>
+          <name>$PROJ_DIR$\source\config\include\led_references.h</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\source\config\include\private_system_config.h</name>
         </file>
         <file>
           <name>$PROJ_DIR$\source\config\include\public_system_config.h</name>
         </file>
       </group>
+      <file>
+        <name>$PROJ_DIR$\source\config\config_leds.cpp</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\source\config\config_maze.cpp</name>
       </file>

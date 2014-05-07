@@ -13,19 +13,20 @@
 *                                         TYPES
 *--------------------------------------------------------------------------------------*/
 
+// Which robot is being used.  I was hoping to avoid this, but it seems to make the code
+// more readable and less easy to break.
+typedef enum
+{
+    BABY_KITTEN,
+    POWER_LION,
+} robot_identifier_t;
+
 // What type of motors to use.
 typedef enum
 {
     DC_BRUSHED_MOTOR_TYPE,
     STEPPER_MOTOR_TYPE,
 } motor_type_t;
-
-// Whether or not the micromouse has sensors on both the front and back or just the front.
-typedef enum
-{
-    ONE_SIDED_SENSOR_TYPE,
-    TWO_SIDED_SENSOR_TYPE,
-} sensor_side_t;
 
 // Default maze solving type.
 typedef enum

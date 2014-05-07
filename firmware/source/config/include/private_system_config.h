@@ -29,6 +29,8 @@ class IPathFinder;
 class IMotor;
 class IDistanceSensors;
 
+void configure_leds(void);
+
 Maze * configure_maze(void);
 
 IPathFinder * configure_path_finder

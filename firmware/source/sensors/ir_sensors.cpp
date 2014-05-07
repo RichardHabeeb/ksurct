@@ -84,7 +84,7 @@ IRSensors::IRSensors
                                       | GPIO_Pin_4;
                           break;
 
-        case POWERLION:   ADCx = ADC1;
+        case POWER_LION:  ADCx = ADC1;
                           emiter_gpio = GPIOB;
                           emiter_pins = GPIO_Pin_11
                                       | GPIO_Pin_12
@@ -190,7 +190,7 @@ void IRSensors::Initialize( void )
                           GPIO_Init(GPIOC, &GPIO_InitStructure);
                           break;
 
-        case POWERLION:   // Enable clocks
+        case POWER_LION:  // Enable clocks
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE );
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOB, ENABLE );
                           RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOC, ENABLE );
@@ -336,7 +336,7 @@ void IRSensors::InitDMA()
     {
         case BABY_KITTEN: // Intentional fallthrough
 
-        case POWERLION:   DMA_InitStructure.DMA_Channel = DMA_Channel_0;
+        case POWER_LION:  DMA_InitStructure.DMA_Channel = DMA_Channel_0;
                           DMA_Init( DMA2_Stream0, &DMA_InitStructure );
                           DMA_Cmd( DMA2_Stream0, ENABLE );
                           // Set up transfer error interupt
@@ -367,7 +367,7 @@ void IRSensors::InitADC( void )
                           channels[4] = ADC_Channel_5;
                           break;
 
-        case POWERLION:   channels[0] = ADC_Channel_14; //Front sensor channels
+        case POWER_LION:  channels[0] = ADC_Channel_14; //Front sensor channels
                           channels[1] = ADC_Channel_7;
                           channels[2] = ADC_Channel_6;
                           channels[3] = ADC_Channel_5;
@@ -434,7 +434,7 @@ void IRSensors::InitInterrupts( void )
     {
         case BABY_KITTEN: // Intentional fallthrough
 
-        case POWERLION:   // Enable timer global interrupt
+        case POWER_LION:   // Enable timer global interrupt
                           NVIC_InitStructure.NVIC_IRQChannel = ADC_IRQn;
                           NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
                           NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
@@ -489,7 +489,7 @@ inline float IRSensors::ConvertToDistance( float adc_value )
                 return -4000000.0f * imv * imv + 17847.0f * imv - 0.4792f;
             }
 
-        case POWERLION:
+        case POWER_LION:
             // The peak of the equation, if mv gets belov this than distance starts to drop
             if( mv < 119.0f )
             {

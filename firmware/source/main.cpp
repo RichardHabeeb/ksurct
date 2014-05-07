@@ -114,18 +114,19 @@ void test_motors(PairedMotors & motors)
 *****************************************************************************/
 void test_sensors(IDistanceSensors & sensors)
 {
+    sensors.CalibrateSensor( sensor_id_front, 8.0f );
+
+    double time;
+
     while (true)
     {
-        float left        = sensors.ReadDistance(sensor_id_left);
-        float front_left  = sensors.ReadDistance(sensor_id_front_nw);
-        float front       = sensors.ReadDistance(sensor_id_front);
-        float front_right = sensors.ReadDistance(sensor_id_front_ne);
-        float right       = sensors.ReadDistance(sensor_id_right);
-        printf("\n\nl:  %f", left);
-        printf("\nfl: %f", front_left);
-        printf("\nf:  %f", front);
-        printf("\nfr: %f", front_right);
-        printf("\nr:  %f", right);
+        time = system_timer.get_time();
+        while (system_timer.get_time() < time + 2.f);
+        printf("\n\nl:  %f",sensors.ReadDistance(sensor_id_left));
+        printf("\nfl: %f",  sensors.ReadDistance(sensor_id_front_nw));
+        printf("\nf:  %f",  sensors.ReadDistance(sensor_id_front));
+        printf("\nfr: %f",  sensors.ReadDistance(sensor_id_front_ne));
+        printf("\nr:  %f",  sensors.ReadDistance(sensor_id_right));
     }
 
 } // test_sensors()

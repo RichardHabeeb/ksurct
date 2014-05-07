@@ -121,7 +121,7 @@ bool IRSensors::isCalibrating( void )
 void IRSensors::CalibrateSensor( sensor_id_t sensor_id, float known_distance )
 {
     int i;
-    float total_reading;
+    float total_reading = 0.0f;
 
     // Number of times to sample specified sensor.
     const uint32_t sampling_count = 250;
@@ -482,7 +482,7 @@ inline float IRSensors::ConvertToDistance( float adc_value )
     switch( this_robot )
     {
         case BABY_KITTEN:
-            return -2000000.0f * imv * imv + 12436.0f * imv + 0.0252f;
+            return -4000000.0f * imv * imv + 17847.0f * imv + 0.4792f;
 
         case POWERLION:
             return -269032.0f * imv * imv + 4556.5f * imv + 0.9883f;

@@ -33,8 +33,8 @@
 
 // All offsets are in centimeters.
 // TODO: Measure these.
-#define  SENSOR_OFFSET_FRONT     (5.f)
-#define  SENSOR_OFFSET_SIDE      (5.f)
+#define  SENSOR_OFFSET_FRONT     (5.6f)
+#define  SENSOR_OFFSET_SIDE      (4.75f)
 #define  SENSOR_OFFSET_DIAGONAL  (5.f)
 
 /*---------------------------------------------------------------------------------------

@@ -42,7 +42,7 @@
 // If using simulated sensors they will always need to use a test maze (that's how they're simulated)
 // so if 'use simulated sensors' is true and 'use test maze' is false then will pass a blank 'real'
 // maze to micromouse but sensors will still be mapping the 'test' maze walls.
-#define USE_SIMULATED_SENSORS   (true)
-#define USE_TEST_MAZE           (true)
+#define USE_SIMULATED_SENSORS   (false)
+#define USE_TEST_MAZE           (false)
 
 #endif // CONFIG_SETTINGS_INCLUDED_H

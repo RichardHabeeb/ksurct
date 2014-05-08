@@ -17,11 +17,11 @@
 #include <cstring>
 
 #include "config_settings.h"
+#include "led_references.h"
 #include "micromouse.h"
 #include "simulated_ir_sensors.h"
 #include "system_timer.h"
 #include "util_math.h"
-
 
 /*---------------------------------------------------------------------------------------
 *                                   LITERAL CONSTANTS
@@ -157,12 +157,12 @@ void Micromouse::SolveMaze(void)
 
     while (true)
     {
-        if(CheckForCoveredSensors())
-        {
-            motors.Stop();
-            ConfigureRobotMenu();
-        }
-        
+        //if (CheckForCoveredSensors())
+        //{
+        //    motors.Stop();
+        //    ConfigureRobotMenu();
+        //}
+
         // Determine distance to next checkpoint and what type of checkpoint it is.
         SetupNextCheckpoint();
 
@@ -170,7 +170,7 @@ void Micromouse::SolveMaze(void)
 
         current_position = target_cell.position;
 
-        printf("\n(%d,%d)", current_position.x, current_position.y);
+        //printf("\n(%d,%d)", current_position.x, current_position.y);
 
         switch (current_checkpoint_type)
         {
@@ -402,6 +402,12 @@ void Micromouse::UpdateWalls(void)
     {
         current_cell->set_wall(ConvertToHeading(forward, current_heading));
     }
+
+    // Set directional LEDs for user feedback.
+    // NOTE: using back LED instead of front because front isn't working on Baby Kitten.
+    is_wall_on_right ? right_directional_led->WriteHigh() : right_directional_led->WriteLow();
+    is_wall_on_left  ? left_directional_led->WriteHigh()  : left_directional_led->WriteLow();
+    is_wall_in_front ? back_directional_led->WriteHigh()  : back_directional_led->WriteLow();
 
 } // Micromouse::UpdateWalls()
 
@@ -818,7 +824,7 @@ void Micromouse::CapPositionToMazeSize
 /*****************************************************************************
 * Function: CheckForCoveredSensors
 *
-* Description: 
+* Description:
 *****************************************************************************/
 bool Micromouse::CheckForCoveredSensors()
 {
@@ -831,12 +837,12 @@ bool Micromouse::CheckForCoveredSensors()
 /*****************************************************************************
 * Function: ConfigureRobotMenu
 *
-* Description: 
+* Description:
 *****************************************************************************/
 void Micromouse::ConfigureRobotMenu()
 {
     const float SENSOR_COVERED_THRESHOLD = 1.0f; // magic number, move/test this later
-    
+
     //wait for sensors to be covered
     while(true)
     {
@@ -844,20 +850,20 @@ void Micromouse::ConfigureRobotMenu()
         {
             // turn on led
         }
-        
+
         if(sensors.ReadDistance(sensor_id_left) < SENSOR_COVERED_THRESHOLD)
         {
             // turn on led
         }
-        
+
         if(sensors.ReadDistance(sensor_id_right) < SENSOR_COVERED_THRESHOLD)
         {
             // turn on led
         }
-        
-        
+
+
         double time_to_hold = system_timer.get_time() + 5.0;
-        
+
         //front sensor covered to exit menu
         while(  sensors.ReadDistance(sensor_id_front) <  SENSOR_COVERED_THRESHOLD &&
                 sensors.ReadDistance(sensor_id_left)  >= SENSOR_COVERED_THRESHOLD &&
@@ -866,15 +872,15 @@ void Micromouse::ConfigureRobotMenu()
             if(system_timer.get_time() > time_to_hold)
             {
                 //turn off led's
-                
+
                 // Always wait 3 seconds after plugging in to give user time to move hands.
                 double time = system_timer.get_time();
                 while (system_timer.get_time() < time_to_hold + 3.0);
-                
+
                 return;
             }
         }
-        
+
         //right sensor covered to reset robot position.
         while(  sensors.ReadDistance(sensor_id_front) >= SENSOR_COVERED_THRESHOLD &&
                 sensors.ReadDistance(sensor_id_left)  >= SENSOR_COVERED_THRESHOLD &&
@@ -885,7 +891,7 @@ void Micromouse::ConfigureRobotMenu()
                 ResetToStartingCell();
             }
         }
-        
+
         //left sensor covered to unvisit previous 15 new cells
         while(  sensors.ReadDistance(sensor_id_front) >= SENSOR_COVERED_THRESHOLD &&
                 sensors.ReadDistance(sensor_id_left)  >= SENSOR_COVERED_THRESHOLD &&
@@ -894,11 +900,11 @@ void Micromouse::ConfigureRobotMenu()
             if(system_timer.get_time() > time_to_hold)
             {
                 ResetToStartingCell();
-                
+
                 //TODO COMMAND STACK
             }
         }
-        
+
         //left and right sensors covered to set speed
         while(  sensors.ReadDistance(sensor_id_front) >= SENSOR_COVERED_THRESHOLD &&
                 sensors.ReadDistance(sensor_id_left)  <  SENSOR_COVERED_THRESHOLD &&
@@ -910,7 +916,5 @@ void Micromouse::ConfigureRobotMenu()
             }
         }
 
-    }  
+    }
 } // Micromouse::ConfigureRobotMenu()
-
-

@@ -12,6 +12,7 @@
 *--------------------------------------------------------------------------------------*/
 
 #include <cstring>
+#include <cmath>
 
 #include "ir_sensors.h"
 #include "stm32f4xx_adc.h"
@@ -247,7 +248,11 @@ void IRSensors::Initialize( void )
 *****************************************************************************/
 float IRSensors::ReadDistance( sensor_id_t id )
 {
-    return ConvertToDistance( rolling_average[ id ] ) + calibration_offsets[ id ];
+    //if( this_robot == BABY_KITTEN && id == sensor_id_left )
+    //{
+    //    return (ConvertToDistance( rolling_average[ id ] ) / 2.0f )+ calibration_offsets[ id ];
+    //}
+    return ConvertToDistance( rolling_average[ id ] )+ calibration_offsets[ id ];
 
 } // ReadDistance
 
@@ -479,26 +484,10 @@ inline float IRSensors::ConvertToDistance( float adc_value )
     switch( this_robot )
     {
         case BABY_KITTEN:
-            // The peak of the equation, if mv gets belov this than distance starts to drop
-            if( mv < 449.0f )
-            {
-                return 100.0f;
-            }
-            else
-            {
-                return -4000000.0f * imv * imv + 17847.0f * imv - 0.4792f;
-            }
+            return (6.134f * log( imv ) + 52.287f);
 
         case POWER_LION:
-            // The peak of the equation, if mv gets belov this than distance starts to drop
-            if( mv < 119.0f )
-            {
-                return 100.0f;
-            }
-            else
-            {
-                return -269032.0f * imv * imv + 4556.5f * imv + 0.9883f;
-            }
+            return 361.93f * pow( mv, -0.6135f );
 
         default:
             return -1.0f;

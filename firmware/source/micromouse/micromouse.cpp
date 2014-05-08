@@ -23,6 +23,7 @@
 #include "system_timer.h"
 #include "util_math.h"
 
+
 /*---------------------------------------------------------------------------------------
 *                                   LITERAL CONSTANTS
 *--------------------------------------------------------------------------------------*/
@@ -157,11 +158,11 @@ void Micromouse::SolveMaze(void)
 
     while (true)
     {
-        //if (CheckForCoveredSensors())
-        //{
-        //    motors.Stop();
-        //    ConfigureRobotMenu();
-        //}
+        if(CheckForCoveredSensors())
+        {
+            motors.Stop();
+            ConfigureRobotMenu();
+        }
 
         // Determine distance to next checkpoint and what type of checkpoint it is.
         SetupNextCheckpoint();
@@ -170,7 +171,7 @@ void Micromouse::SolveMaze(void)
 
         current_position = target_cell.position;
 
-        //printf("\n(%d,%d)", current_position.x, current_position.y);
+        printf("\n(%d,%d)", current_position.x, current_position.y);
 
         switch (current_checkpoint_type)
         {
@@ -267,41 +268,6 @@ float Micromouse::CalculateDistanceToCenterOfCell
     return distance_to_middle_of_cell;
 
 } // Micromouse::CalculateDistanceToCenterOfCell()
-
-/*****************************************************************************
-* Function: CalculateDistanceToNeighborCell
-*
-* Description: Returns how far the robot is from next cell in the specified heading.
-*              (in centimeters).
-*****************************************************************************/
-float Micromouse::CalculateDistanceToNeighborCell
-    (
-        cardinal_t heading // Get distance to next cell in this heading.
-    )
-{
-    float cell_length = maze.get_cell_length();
-
-    float distance = 0.f;
-
-    switch (heading)
-    {
-        case north:
-            distance = fmod(net_y_distance, cell_length);
-            break;
-        case south:
-            distance = cell_length - fmod(net_y_distance, cell_length);
-            break;
-        case west:
-            distance = fmod(net_x_distance, cell_length);
-            break;
-        case east:
-            distance = cell_length - fmod(net_x_distance, cell_length);
-            break;
-    }
-
-    return distance;
-
-} // Micromouse::CalculateDistanceToNeighborCell()
 
 /*****************************************************************************
 * Function: TravelForward
@@ -438,12 +404,6 @@ void Micromouse::UpdateWalls(void)
         current_cell->set_wall(ConvertToHeading(forward, current_heading));
     }
 
-    // Set directional LEDs for user feedback.
-    // NOTE: using back LED instead of front because front isn't working on Baby Kitten.
-    is_wall_on_right ? right_directional_led->WriteHigh() : right_directional_led->WriteLow();
-    is_wall_on_left  ? left_directional_led->WriteHigh()  : left_directional_led->WriteLow();
-    is_wall_in_front ? back_directional_led->WriteHigh()  : back_directional_led->WriteLow();
-
 } // Micromouse::UpdateWalls()
 
 /*****************************************************************************
@@ -485,7 +445,7 @@ bool Micromouse::DetermineOriginalHeading
 
         Swap(current_position.x, current_position.y);
         Swap(net_x_distance, net_y_distance);
-        //Swap(is_wall_on_left, is_wall_on_right);
+        Swap(is_wall_on_left, is_wall_on_right);
 
         maze.Transpose();
 
@@ -542,6 +502,8 @@ void Micromouse::Center(void)
 * Function: MeasureDistanceToRightWall
 *
 * Description: Returns estimated distance (centimeters) to right wall at current time.
+*              If no left or right wall available then will just return initial
+*              calibration reading from right sensor.
 *****************************************************************************/
 float Micromouse::MeasureDistanceToRightWall(void)
 {
@@ -553,26 +515,36 @@ float Micromouse::MeasureDistanceToRightWall(void)
 
     float distance_to_wall = 0.f;
 
-    bool reliable_wall_readings = IsWallReadingReliable();
-
-    reliable_wall_readings ? indicator_1_led->WriteLow() : indicator_1_led->WriteHigh();
-
-    if (!reliable_wall_readings)
-    {
-        distance_to_wall = maze.get_cell_length() / 2.f;
-    }
-    else if (is_wall_on_right && reliable_wall_readings)
+    if (is_wall_on_right)
     {
         distance_to_wall = right_side_distance;
     }
-    else if (is_wall_on_left && reliable_wall_readings)
+    else if (is_wall_on_left)
     {
         distance_to_wall = maze.get_cell_length() - left_side_distance;
     }
     else // No walls to use for balancing.
     {
         // Estimate distance to right wall using net location information.
-        distance_to_wall = CalculateDistanceToNeighborCell(ConvertToHeading(right, current_heading));
+        cardinal_t right_side_heading = ConvertToHeading(right, current_heading);
+        float cell_length =  maze.get_cell_length();
+
+        // TODO: investigate that remainderf does what I expect.
+        switch (right_side_heading)
+        {
+            case north:
+                distance_to_wall = remainderf(net_y_distance, cell_length);
+                break;
+            case south:
+                distance_to_wall = cell_length - remainderf(net_y_distance, cell_length);
+                break;
+            case west:
+                distance_to_wall = remainderf(net_x_distance, cell_length);
+                break;
+            case east:
+                distance_to_wall = cell_length - remainderf(net_x_distance, cell_length);
+                break;
+        }
     }
 
     return distance_to_wall;
@@ -665,7 +637,7 @@ void Micromouse::Turn
 {
     direction_t direction_to_turn = ConvertToDirection(heading_to_face, current_heading);
 
-    float forward_angle_in_degrees = 0.f; // forward_angle * degrees_per_radian;
+    float forward_angle_in_degrees = forward_angle * degrees_per_radian;
 
     switch (direction_to_turn)
     {
@@ -726,6 +698,7 @@ void Micromouse::HandleReturnToStart(void)
     //INCREASE SPEED?
 
 } // Micromouse::HandleMazeSolve()
+
 
 /*****************************************************************************
 * Function: ForwardPosition
@@ -844,27 +817,6 @@ void Micromouse::CapPositionToMazeSize
 } // Micromouse::CapPositionToMazeSize()
 
 /*****************************************************************************
-* Function: IsWallReadingReliable
-*
-* Description:
-*****************************************************************************/
-bool Micromouse::IsWallReadingReliable(void)
-{
-    // This should be in the sensor config stuff and then used to calculate when to read
-    // sensors.  In a rush so someone can do this later.  It seems to be the same for both
-    // robots.  It's the distance from the sensors projected back to the center of the robot
-    // in the forward (not lateral direction)
-    const float side_sensor_to_motor_axel = 3.f; // centimeters
-
-    float distance_to_next_cell = CalculateDistanceToNeighborCell(current_heading);
-
-    float sensors_to_next_cell = distance_to_next_cell - side_sensor_to_motor_axel;
-
-    return AbsoluteValue(sensors_to_next_cell) >= 1.5f;
-
-} // Micromouse::IsWallReadingReliable()
-
-/*****************************************************************************
 * Function: CheckForCoveredSensors
 *
 * Description:
@@ -891,17 +843,17 @@ void Micromouse::ConfigureRobotMenu()
     {
         if(sensors.ReadDistance(sensor_id_front) < SENSOR_COVERED_THRESHOLD)
         {
-            // turn on led
+            front_directional_led->WriteHigh();
         }
 
         if(sensors.ReadDistance(sensor_id_left) < SENSOR_COVERED_THRESHOLD)
         {
-            // turn on led
+            left_directional_led->WriteHigh();
         }
 
         if(sensors.ReadDistance(sensor_id_right) < SENSOR_COVERED_THRESHOLD)
         {
-            // turn on led
+            right_directional_led->WriteHigh();
         }
 
 
@@ -961,3 +913,5 @@ void Micromouse::ConfigureRobotMenu()
 
     }
 } // Micromouse::ConfigureRobotMenu()
+
+

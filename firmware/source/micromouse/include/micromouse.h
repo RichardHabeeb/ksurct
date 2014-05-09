@@ -206,6 +206,9 @@ private: // methods
             heading_t heading_to_face // New heading to point torwards (north, east, etc)
         );
 
+    // Corrects the heading of the robot to be parallel to a wall
+    void CorrectHeading(void);
+
     // Keeps robot in middle of the cells when driving forward through the maze.
     void Center(void);
 

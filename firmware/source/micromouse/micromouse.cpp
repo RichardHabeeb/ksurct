@@ -643,7 +643,7 @@ void Micromouse::Turn
     )
 {
     direction_t direction_to_turn = ConvertToDirection(heading_to_face, current_heading);
-
+	
     switch (direction_to_turn)
     {
         case right:
@@ -659,7 +659,72 @@ void Micromouse::Turn
 
     current_heading = heading_to_face;
 
+    // Turning is our reset case for heading used for odometry.
+    forward_angle = 0.f;
+
+    CorrectHeading();
+
 } // Micromouse::Turn()
+
+/*****************************************************************************
+* Function:
+*
+* Description: Corrects the heading of the robot to be parallel to a wall
+*****************************************************************************/
+void Micromouse::CorrectHeading(void)
+{
+    bool is_wall_on_right = ReadRightDistance() <= thresholds.side;
+    bool is_wall_on_left  = ReadLeftDistance()  <= thresholds.side;
+    bool is_wall_in_front = ReadFrontDistance() <= (thresholds.front + maze_evaluate_checkpoint_offset_distance);
+
+    // Without walls we cannot correct the heading
+    if (is_wall_on_right || is_wall_on_left || is_wall_in_front)
+    {
+        motor_turn_t zeroing_turn_direction = turn_right;
+        float distance_to_wall[3];
+        int distance_read_count = 0;
+        bool distance_not_minimum = true;
+
+        while (distance_not_minimum)
+        {
+            motors.ZeroPointTurn(zeroing_turn_direction, 3.f, turning_speed);
+
+            if (is_wall_on_right)
+            {
+                distance_to_wall[distance_read_count%3] = ReadRightDistance();
+            }
+            else if (is_wall_on_left)
+            {
+                distance_to_wall[distance_read_count%3] = ReadLeftDistance();
+            }
+            else // (is_wall_in_front)
+            {
+                distance_to_wall[distance_read_count%3] = ReadLeftDistance();
+            }
+
+            if (distance_read_count > 3)
+            {
+                if (distance_to_wall[distance_read_count%3]>distance_to_wall[(distance_read_count-1)%3])
+                {
+                    if (zeroing_turn_direction == turn_right)
+                    {
+                        zeroing_turn_direction = turn_left;
+                    }
+                    else // zeroing_turn_direction == turn_left
+                    {
+                        //motors.ZeroPointTurn(turn_right, 3.f, turning_speed);
+                    }
+                }
+                else if (fabs(distance_to_wall[distance_read_count%3]-distance_to_wall[(distance_read_count-1)%3]) < 0.25f )
+                {
+                    distance_not_minimum = false;
+                }
+            }
+            distance_read_count++;
+        }
+    }
+
+} // Micromouse::CorrectHeading
 
 /*****************************************************************************
 * Function: HandleMazeSolve

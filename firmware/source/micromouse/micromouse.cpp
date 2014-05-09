@@ -144,7 +144,7 @@ void Micromouse::SolveMaze(void)
 {
     // Since we're in the first cell we know we're centered in the cell and have walls
     // on each side.  This means we can calibrate the side sensors to some known distance.
-    CalibrateSensors();
+    //CalibrateSensors();
 
     // Map side walls since they should always be there by competition rules. Don't want
     // to just call UpdateWalls() since there's a good chance we're not starting in the
@@ -171,7 +171,7 @@ void Micromouse::SolveMaze(void)
 
         current_position = target_cell.position;
 
-        printf("\n(%d,%d)", current_position.x, current_position.y);
+        //printf("\n(%d,%d)", current_position.x, current_position.y);
 
         switch (current_checkpoint_type)
         {
@@ -823,10 +823,9 @@ void Micromouse::CapPositionToMazeSize
 *****************************************************************************/
 bool Micromouse::CheckForCoveredSensors()
 {
-    const float SENSOR_COVERED_THRESHOLD = 1.0f; // magic number, move/test this later
-    return  sensors.ReadDistance(sensor_id_front) < SENSOR_COVERED_THRESHOLD &&
-            sensors.ReadDistance(sensor_id_left)  < SENSOR_COVERED_THRESHOLD &&
-            sensors.ReadDistance(sensor_id_right) < SENSOR_COVERED_THRESHOLD;
+    return  sensors.ReadDistance(sensor_id_front) < SENSOR_COVERED_THRESHOLD_FRONT &&
+            sensors.ReadDistance(sensor_id_left)  < SENSOR_COVERED_THRESHOLD_LEFT &&
+            sensors.ReadDistance(sensor_id_right) < SENSOR_COVERED_THRESHOLD_RIGHT;
 } // Micromouse::CheckForCoveredSensors()
 
 /*****************************************************************************
@@ -836,79 +835,78 @@ bool Micromouse::CheckForCoveredSensors()
 *****************************************************************************/
 void Micromouse::ConfigureRobotMenu()
 {
-    const float SENSOR_COVERED_THRESHOLD = 1.0f; // magic number, move/test this later
+    //Enter Menu Animation
+    for(int i = 0; i < 4; i++)
+    {
+        double time = system_timer.get_time();
+        indicator_1_led->Toggle();
+        while (system_timer.get_time() < time + 0.1f);
+
+        time = system_timer.get_time();
+        indicator_2_led->Toggle();
+        while (system_timer.get_time() < time + 0.1f);
+
+        time = system_timer.get_time();
+        indicator_3_led->Toggle();
+        while (system_timer.get_time() < time + 0.1f);
+
+        time = system_timer.get_time();
+        indicator_4_led->Toggle();
+        while (system_timer.get_time() < time + 0.1f);
+    }
+
+    double time_since_front_covered = system_timer.get_time();
+    double time_since_right_covered = system_timer.get_time();
+    double time_since_left_covered = system_timer.get_time();
 
     //wait for sensors to be covered
     while(true)
     {
-        if(sensors.ReadDistance(sensor_id_front) < SENSOR_COVERED_THRESHOLD)
+
+        if(sensors.ReadDistance(sensor_id_front) < SENSOR_COVERED_THRESHOLD_FRONT)
         {
             front_directional_led->WriteHigh();
         }
+        else
+        {
+            time_since_front_covered = system_timer.get_time();
+            front_directional_led->WriteLow();
+        }
 
-        if(sensors.ReadDistance(sensor_id_left) < SENSOR_COVERED_THRESHOLD)
+        if(sensors.ReadDistance(sensor_id_left) < SENSOR_COVERED_THRESHOLD_LEFT)
         {
             left_directional_led->WriteHigh();
         }
+        else
+        {
+            time_since_left_covered = system_timer.get_time();
+            left_directional_led->WriteLow();
+        }
 
-        if(sensors.ReadDistance(sensor_id_right) < SENSOR_COVERED_THRESHOLD)
+        if(sensors.ReadDistance(sensor_id_right) < SENSOR_COVERED_THRESHOLD_RIGHT)
         {
             right_directional_led->WriteHigh();
         }
-
-
-        double time_to_hold = system_timer.get_time() + 5.0;
-
-        //front sensor covered to exit menu
-        while(  sensors.ReadDistance(sensor_id_front) <  SENSOR_COVERED_THRESHOLD &&
-                sensors.ReadDistance(sensor_id_left)  >= SENSOR_COVERED_THRESHOLD &&
-                sensors.ReadDistance(sensor_id_right) >= SENSOR_COVERED_THRESHOLD )
+        else
         {
-            if(system_timer.get_time() > time_to_hold)
-            {
-                //turn off led's
-
-                // Always wait 3 seconds after plugging in to give user time to move hands.
-                double time = system_timer.get_time();
-                while (system_timer.get_time() < time_to_hold + 3.0);
-
-                return;
-            }
+            time_since_right_covered = system_timer.get_time();
+            right_directional_led->WriteLow();
         }
 
-        //right sensor covered to reset robot position.
-        while(  sensors.ReadDistance(sensor_id_front) >= SENSOR_COVERED_THRESHOLD &&
-                sensors.ReadDistance(sensor_id_left)  >= SENSOR_COVERED_THRESHOLD &&
-                sensors.ReadDistance(sensor_id_right) <  SENSOR_COVERED_THRESHOLD )
-        {
-            if(system_timer.get_time() > time_to_hold)
-            {
-                ResetToStartingCell();
-            }
-        }
 
-        //left sensor covered to unvisit previous 15 new cells
-        while(  sensors.ReadDistance(sensor_id_front) >= SENSOR_COVERED_THRESHOLD &&
-                sensors.ReadDistance(sensor_id_left)  >= SENSOR_COVERED_THRESHOLD &&
-                sensors.ReadDistance(sensor_id_right) <  SENSOR_COVERED_THRESHOLD )
+        // Move forward
+        if(time_since_front_covered + 3.0 < system_timer.get_time() &&
+           time_since_left_covered + 3.0 > system_timer.get_time() &&
+           time_since_right_covered + 3.0 > system_timer.get_time())
         {
-            if(system_timer.get_time() > time_to_hold)
-            {
-                ResetToStartingCell();
-
-                //TODO COMMAND STACK
-            }
-        }
-
-        //left and right sensors covered to set speed
-        while(  sensors.ReadDistance(sensor_id_front) >= SENSOR_COVERED_THRESHOLD &&
-                sensors.ReadDistance(sensor_id_left)  <  SENSOR_COVERED_THRESHOLD &&
-                sensors.ReadDistance(sensor_id_right) <  SENSOR_COVERED_THRESHOLD )
-        {
-            if(system_timer.get_time() > time_to_hold)
-            {
-                //update speed led's according to how long this has been held down
-            }
+            double wait_time = system_timer.get_time();
+            indicator_1_led->WriteHigh();
+            while (system_timer.get_time() < wait_time + 3.0f);
+            indicator_1_led->WriteLow();
+            front_directional_led->WriteLow();
+            left_directional_led->WriteLow();
+            right_directional_led->WriteLow();
+            return;
         }
 
     }

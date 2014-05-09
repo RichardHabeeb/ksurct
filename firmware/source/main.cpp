@@ -58,12 +58,17 @@ int main(void)
 
     system_timer.Initialize(1e6);
 
-    //micromouse->ConfigureRobotMenu();
-
-    //test_sensors(micromouse->get_sensors());
-
+    //Wait 3 seconds to move hands
     double time = system_timer.get_time();
     while (system_timer.get_time() < time + 3.0);
+
+    //Calibrate sensors
+    indicator_1_led->WriteHigh();
+    micromouse->CalibrateSensors();
+    indicator_1_led->WriteLow();
+
+    //Enter config menu
+    micromouse->ConfigureRobotMenu();
 
     while (true)
     {
@@ -113,6 +118,8 @@ void test_motors(PairedMotors & motors)
 *****************************************************************************/
 void test_sensors(IDistanceSensors & sensors)
 {
+    sensors.CalibrateSensor( sensor_id_front, 8.0f );
+
     double time;
 
     while (true)

@@ -96,6 +96,10 @@ public: // methods
             float                     turning_speed         // Rotational turning speed of robot (degrees / second)
         );
 
+    // Corrects for any constant offsets in direct sensor readings. Should only be called
+    // when perfectly centered in cell and have walls on both sides.
+    void CalibrateSensors(void);
+
     // Check to see if the side sensors are covered
     bool CheckForCoveredSensors(void);
 
@@ -222,12 +226,8 @@ private: // methods
 
     bool IsWallReadingReliable(void);
 
-    // Corrects for any constant offsets in direct sensor readings. Should only be called
-    // when perfectly centered in cell and have walls on both sides.
-    void CalibrateSensors(void);
 
     void IsRightDistanceReliable(void);
-
     // Reading functions that account for distance to center of robot. Should always be
     // used instead of directly reading in from sensors.
     inline float ReadRightDistance(void);

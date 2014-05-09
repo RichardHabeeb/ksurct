@@ -66,7 +66,18 @@ public: // methods
     // Calculates difference between measured distance and the specified known distance
     // that sensor should be at.  This error offset will be calculated and added in for
     // every future reading of the sensor.
-    void CalibrateSensor( sensor_id_t sensor_id, float known_distance );
+    void CalibrateSensor
+        (
+            sensor_id_t sensor_id,  // Sensor to calibrate
+            float known_distance    // Distance to calibrate the sensor to
+        );
+
+    // Returns if the sensor is saturated by checking if the reading
+    // is near the logic voltage.
+    bool IsSaturated
+        (
+            sensor_id_t sensor_id   // Sensor to check
+        );
 
     // Returns whether or not the sensors are calibrating
     bool isCalibrating(void);

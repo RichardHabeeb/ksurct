@@ -259,6 +259,19 @@ float IRSensors::ReadDistance( sensor_id_t id )
 
 
 /*****************************************************************************
+* Function: IsSaturated
+*
+* Description: Returns if the sensor is saturated by checking if the reading
+*              is near the logic voltage.
+*****************************************************************************/
+bool IRSensors::IsSaturated( sensor_id_t sensor_id )
+{
+    return rolling_average[ sensor_id ] >= 3200.0f;
+
+} // IsSaturated
+
+
+/*****************************************************************************
 * Function: StartRead
 *
 * Description: Starts the ADC read and turns on the emiter_pins every other

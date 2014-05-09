@@ -61,6 +61,12 @@ public: // methods
             float known_distance
         ) = 0;
 
+    // Returns if the sensor is saturated by checking if the reading
+    // is near the logic voltage.
+    virtual bool IsSaturated
+        (
+            sensor_id_t sensor_id   // Sensor to check
+        ) = 0;
 }; // IDistanceSensors
 
 #endif // DISTANCE_SENSORS_INTERFACE_INCLUDED_H

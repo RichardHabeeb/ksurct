@@ -56,12 +56,17 @@ public: // methods
             float known_distance
         ) { }
 
+    bool IsSaturated
+        (
+            sensor_id_t sensor_id   // Sensor to check
+        ) { return false; }
+
     // Returns distance to robots center point in centimeters for the given sensor id.
     float ReadDistance
         (
             sensor_id_t sensor_id
         );
-    
+
     void TransposeMaze(void) { this->maze->Transpose(); }
 
     void set_maze(Maze & maze) { this->maze = &maze; }

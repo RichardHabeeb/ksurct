@@ -76,7 +76,7 @@ float SimulatedIRSensors::ReadDistance
         sensor_id_t sensor_id
     )
 {
-    //float forward_angle = micromouse->get_foward_angle();
+    //float forward_angle = micromouse->get_forward_angle();
     float x_distance  = micromouse->get_x_distance();
     float y_distance  = micromouse->get_y_distance();
     float cell_length = maze->get_cell_length();

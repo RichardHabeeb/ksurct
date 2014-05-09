@@ -304,13 +304,6 @@ void Micromouse::TravelForward
         float right_distance = motors.get_right_motor().get_current_distance();
         float left_distance  = motors.get_left_motor().get_current_distance();
 
-        // Estimate where robot is pointing.  Since this information is needed elsewhere
-        // (such as turning) it is a class field. The angle is referenced from 0 radians
-        // being in front of the robot.  Increases clockwise.
-        // From small angle approximation for arcs then applying law of cosines.
-        // http://en.wikipedia.org/wiki/Odometry
-        forward_angle = (PI / 2.f) - acosf((left_distance - right_distance) / (2.f * motors.get_wheel_base_distance()));
-
         // Calculate how far forward each wheel has travelled since last time.
         float delta_right_distance = right_distance - last_right_distance;
         float delta_left_distance  = left_distance  - last_left_distance;
@@ -318,15 +311,12 @@ void Micromouse::TravelForward
         // Calculate incremental distance that center of robot has moved.
         float delta_distance_travelled = fabs(delta_right_distance + delta_left_distance) / 2.f;
 
-        float incremental_forward_distance = delta_distance_travelled * cosf(forward_angle);
-        float incremental_lateral_distance = delta_distance_travelled * sinf(forward_angle);
-
-        total_forward_distance += incremental_forward_distance;
-        total_lateral_distance += incremental_lateral_distance;
+        total_forward_distance += delta_distance_travelled;
+        total_lateral_distance += 0.f;
 
         // Need to do this constantly in case we lose both walls for balancing then can
         // still estimate how far we are from center of cell using net location.
-        UpdateNetLocation(incremental_forward_distance, incremental_lateral_distance);
+        UpdateNetLocation(delta_distance_travelled, 0.f);
 
         // Save values so next time through loop can remember how far we've travelled.
         last_right_distance = right_distance;
@@ -477,6 +467,15 @@ void Micromouse::Center(void)
     // elapsed before trying to run PID calculation again.
     if (delta_time >= minimum_centering_period)
     {
+        bool reliable_wall_readings = IsWallReadingReliable();
+
+        reliable_wall_readings ? indicator_1_led->WriteLow() : indicator_1_led->WriteHigh();
+
+        if (!reliable_wall_readings)
+        {
+            return;
+        }
+
         // In order to avoid large delta times due to not constantly centering (ie turning / etc)
         // fix change in time to minimum period.  This should be ok since this method is getting
         // constantly run when travelling forward.
@@ -514,6 +513,14 @@ float Micromouse::MeasureDistanceToRightWall(void)
     bool is_wall_on_left  = left_side_distance  <= thresholds.side;
 
     float distance_to_wall = 0.f;
+
+    if (is_wall_on_right && is_wall_on_left)
+    {
+        if (right_side_distance < left_side_distance)
+        {
+            is_wall_on_right = false;
+        }
+    }
 
     if (is_wall_on_right)
     {
@@ -637,25 +644,20 @@ void Micromouse::Turn
 {
     direction_t direction_to_turn = ConvertToDirection(heading_to_face, current_heading);
 
-    float forward_angle_in_degrees = forward_angle * degrees_per_radian;
-
     switch (direction_to_turn)
     {
         case right:
-            motors.ZeroPointTurn(turn_right, 90.f - forward_angle_in_degrees, turning_speed);
+            motors.ZeroPointTurn(turn_right, 90.f, turning_speed);
             break;
         case left:
-            motors.ZeroPointTurn(turn_left, 90.f + forward_angle_in_degrees, turning_speed);
+            motors.ZeroPointTurn(turn_left, 90.f, turning_speed);
             break;
         case backward:
-            motors.ZeroPointTurn(turn_left, 180.f + forward_angle_in_degrees, turning_speed);
+            motors.ZeroPointTurn(turn_left, 180.f, turning_speed);
             break;
     }
 
     current_heading = heading_to_face;
-
-    // Turning is our reset case for heading used for odometry.
-    forward_angle = 0.f;
 
 } // Micromouse::Turn()
 
@@ -698,7 +700,6 @@ void Micromouse::HandleReturnToStart(void)
     //INCREASE SPEED?
 
 } // Micromouse::HandleMazeSolve()
-
 
 /*****************************************************************************
 * Function: ForwardPosition
@@ -815,6 +816,62 @@ void Micromouse::CapPositionToMazeSize
     cell->y = CapBounds<uint8_t>(cell->y, 0, maze.get_number_rows() - 1);
 
 } // Micromouse::CapPositionToMazeSize()
+
+/*****************************************************************************
+* Function: CalculateDistanceToNeighborCell
+*
+* Description: Returns how far the robot is from next cell in the specified heading.
+*              (in centimeters).
+*****************************************************************************/
+float Micromouse::CalculateDistanceToNeighborCell
+    (
+        cardinal_t heading // Get distance to next cell in this heading.
+    )
+{
+    float cell_length = maze.get_cell_length();
+
+    float distance = 0.f;
+
+    switch (heading)
+    {
+        case north:
+            distance = fmod(net_y_distance, cell_length);
+            break;
+        case south:
+            distance = cell_length - fmod(net_y_distance, cell_length);
+            break;
+        case west:
+            distance = fmod(net_x_distance, cell_length);
+            break;
+        case east:
+            distance = cell_length - fmod(net_x_distance, cell_length);
+            break;
+    }
+
+    return distance;
+
+} // Micromouse::CalculateDistanceToNeighborCell()
+
+/*****************************************************************************
+* Function: IsWallReadingReliable
+*
+* Description:
+*****************************************************************************/
+bool Micromouse::IsWallReadingReliable(void)
+{
+    // This should be in the sensor config stuff and then used to calculate when to read
+    // sensors.  In a rush so someone can do this later.  It seems to be the same for both
+    // robots.  It's the distance from the sensors projected back to the center of the robot
+    // in the forward (not lateral direction)
+    const float side_sensor_to_motor_axel = 3.f; // centimeters
+
+    float distance_to_next_cell = CalculateDistanceToNeighborCell(current_heading);
+
+    float sensors_to_next_cell = distance_to_next_cell - side_sensor_to_motor_axel;
+
+    return AbsoluteValue(sensors_to_next_cell) >= 1.5f;
+
+} // Micromouse::IsWallReadingReliable()
 
 /*****************************************************************************
 * Function: CheckForCoveredSensors

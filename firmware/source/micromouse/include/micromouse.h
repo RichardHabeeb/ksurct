@@ -226,7 +226,6 @@ private: // methods
 
     bool IsWallReadingReliable(void);
 
-
     void IsRightDistanceReliable(void);
     // Reading functions that account for distance to center of robot. Should always be
     // used instead of directly reading in from sensors.

@@ -248,11 +248,12 @@ void IRSensors::Initialize( void )
 *****************************************************************************/
 float IRSensors::ReadDistance( sensor_id_t id )
 {
-    //if( this_robot == BABY_KITTEN && id == sensor_id_left )
-    //{
-    //    return (ConvertToDistance( rolling_average[ id ] ) / 2.0f )+ calibration_offsets[ id ];
-    //}
-    return ConvertToDistance( rolling_average[ id ] )+ calibration_offsets[ id ];
+    if( id == sensor_id_front_ne
+     || id == sensor_id_front_nw )
+    {
+        return ( ConvertToDistance( rolling_average[ id ] ) / 2.0f ) + calibration_offsets[ id ];
+    }
+    return ConvertToDistance( rolling_average[ id ] ) + calibration_offsets[ id ];
 
 } // ReadDistance
 

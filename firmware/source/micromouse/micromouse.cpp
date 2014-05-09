@@ -207,6 +207,8 @@ void Micromouse::SolveMaze(void)
 void Micromouse::SetupNextCheckpoint(void)
 {
     float distance_to_center_of_target_cell = CalculateDistanceToCenterOfCell(target_cell.position);
+    Cell * current_cell = maze.get_cell(current_position.y, current_position.x);
+    Cell * previous_cell = current_cell->get_adjacent_cell(GetReverseHeading(current_heading));
 
     if (target_cell.is_start && !maze.IsStartCell(current_position.y, current_position.x))
     {
@@ -219,6 +221,16 @@ void Micromouse::SetupNextCheckpoint(void)
         current_checkpoint_type = maze_solve_checkpoint;
 
         distance_to_checkpoint = distance_to_center_of_target_cell;
+    }
+    // If the current cell has no walls and we just came from a call without walls
+    // we should turn into a corridor to reorient ourselves
+    else if (!current_cell->HasWalls()
+          && previous_cell->get_visited()
+          && !previous_cell->HasWalls() )
+    {
+        current_checkpoint_type = turn_checkpoint;
+        SetupTargetCell(1, ConvertToHeading(right, current_heading));
+        distance_to_checkpoint = 0.f;
     }
     else if (!target_cell.has_been_visited)
     {

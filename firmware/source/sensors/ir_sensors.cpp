@@ -453,7 +453,7 @@ void IRSensors::InitInterrupts( void )
     {
         case BABY_KITTEN: // Intentional fallthrough
 
-        case POWER_LION:   // Enable timer global interrupt
+        case POWER_LION:  // Enable timer global interrupt
                           NVIC_InitStructure.NVIC_IRQChannel = ADC_IRQn;
                           NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
                           NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;

@@ -111,6 +111,20 @@ bool Cell::IsWall(heading_t h)
 
 } // IsWall()
 
+
+/*****************************************************************************
+* Function: HasWalls
+*
+* Description:	Checks all directions in a cell to see if it has walls
+*****************************************************************************/
+bool Cell::HasWalls(void)
+{
+    for( heading_t h = north; h<num_cardinal_directions; h++ )
+    {
+        if( IsWall(h) ) return true;
+    }
+    return false;
+}
 /*****************************************************************************
 * Function: TransposeWalls
 *
@@ -121,7 +135,7 @@ void Cell::TransposeWalls(void)
 	Cell* swap_temp         = adjacent_cells[north];
     adjacent_cells[north]   = adjacent_cells[west];
     adjacent_cells[west]    = swap_temp;
-    
+
     swap_temp               = adjacent_cells[south];
     adjacent_cells[south]   = adjacent_cells[east];
     adjacent_cells[east]    = swap_temp;

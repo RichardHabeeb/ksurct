@@ -46,7 +46,10 @@ public: // methods
         (
             heading_t h
         );
-    
+
+    //Determine whether there are walls in the cell
+    bool HasWalls(void);
+
     void TransposeWalls(void);
 
 	void set_wall

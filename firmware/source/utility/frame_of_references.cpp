@@ -36,7 +36,7 @@
 *                rotations to get from h1 to h2. Example N->S is 2,  E->N
 *                is 1
 *****************************************************************************/
-inline int8_t HeadingDistance
+int8_t HeadingDistance
     (
         cardinal_t h1, // Start heading.
         cardinal_t h2  // Heading to get distance to.

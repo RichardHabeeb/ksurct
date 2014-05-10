@@ -22,10 +22,10 @@
 #define  ROBOT                 (BABY_KITTEN)
 #define  MOTOR_TYPE            (STEPPER_MOTOR_TYPE)
 #define  MAZE_SOLVER           (SIMPLE_FLOOD_FILL_SOLVER)
-#define  WHEEL_BASE            (9.27f) // centimeters
+#define  WHEEL_BASE            (9.f) // centimeters
 #define  WHEEL_DIAMETER        (3.1f)   // centimeters
-#define  TRAVELLING_SPEED      (5.f)   // centimeters / second
-#define  TURNING_SPEED         (5.f)   // degrees / second
+#define  TRAVELLING_SPEED      (3.f)   // centimeters / second
+#define  TURNING_SPEED         (6.f)   // degrees / second
 
 /*---------------------------------------------------------------------------------------
 *                                 SENSOR OFFSETS
@@ -42,13 +42,14 @@
 *--------------------------------------------------------------------------------------*/
 
 // All offsets are in centimeters.
-#define  WALL_TRESHOLD_OFFSET_FRONT     (5.f)
-#define  WALL_TRESHOLD_OFFSET_SIDE      (5.f)
-#define  WALL_TRESHOLD_OFFSET_DIAGONAL  (5.f)
+#define  WALL_TRESHOLD_OFFSET_FRONT     (9.f)
+#define  WALL_TRESHOLD_OFFSET_SIDE      (9.f)
+#define  WALL_TRESHOLD_OFFSET_DIAGONAL  (9.f)
 
 /*---------------------------------------------------------------------------------------
 *                              COVERED THRESHHOLD
 *--------------------------------------------------------------------------------------*/
+
 #define  SENSOR_COVERED_THRESHOLD_FRONT (3.0f)
 #define  SENSOR_COVERED_THRESHOLD_LEFT  (2.0f)
 #define  SENSOR_COVERED_THRESHOLD_RIGHT (3.0f)
@@ -57,13 +58,13 @@
 *                              CENTERING PID PARAMETERS
 *--------------------------------------------------------------------------------------*/
 
-#define CENTERING_PID_KP              (1.5f)
+#define CENTERING_PID_KP              (1.0f)
 #define CENTERING_PID_KI              (0.0f)
-#define CENTERING_PID_KD              (.015f)
-#define CENTERING_PID_SAT_HIGH        (100.f)
-#define CENTERING_PID_SAT_LOW         (-100.f)
-#define CENTERING_PID_INT_SAT_HIGH    (100.f)
-#define CENTERING_PID_INT_SAT_LOW     (-100.f)
+#define CENTERING_PID_KD              (0.0f)
+#define CENTERING_PID_SAT_HIGH        (3.0f)
+#define CENTERING_PID_SAT_LOW         (-3.0f)
+#define CENTERING_PID_INT_SAT_HIGH    (0.75f)
+#define CENTERING_PID_INT_SAT_LOW     (-0.75f)
 
 /*---------------------------------------------------------------------------------------
 *                           SPECIFIC MOTOR/WHEEL SETTINGS
@@ -73,8 +74,8 @@
 #define  FULL_STEPS_PER_REVOLUTION    (200.f)  // How many full steps needed to rotate wheel once.
 #define  PULSES_PER_STEP              (16)     // Ie 2 for half stepping, 16 for 1/16th stepping, etc.
 #define  ACCELERATION_ENABLED         (true)   // Whether or not to use acceleration logic.
-#define  ACCELERATION_TIME_CONSTANT   (.5f)    // How long to accelerate to target speed. (seconds)
+#define  ACCELERATION_TIME_CONSTANT   (.25f)    // How long to accelerate to target speed. (seconds)
 #define  ACCELERATION_REF_SPEED       (20.f)   // What speed to reach after the acceleration time constant (cm/sec)
-#define  VELOCITY_UPDATE_INCREMENT    (1.f)    // How many full steps to update by when accelerating.
+#define  VELOCITY_UPDATE_INCREMENT    (2.f)    // How many full steps to update by when accelerating.
 
 #endif // BABY_KITTEN_SETTINGS_INCLUDED_H

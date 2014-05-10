@@ -25,7 +25,7 @@
 *                                   LITERAL CONSTANTS
 *--------------------------------------------------------------------------------------*/
 
-#define ADC_APLHA               1.0f    // APLHA value for rolling average
+#define ADC_APLHA               0.9f    // APLHA value for rolling average
 #define ADC_TO_MV               ( 1000 * 3.3f / 0x0FFF ) // Scale from 12 bit ADC value to mv
 #define MAX_CALLBACK_SENSORS    1       // Only supporting one instance currently for ease
                                         // Pin and ADC/DMA definitions in header must be
@@ -57,7 +57,7 @@ static uint8_t ir_count = 0;
 *--------------------------------------------------------------------------------------*/
 
 static void SetInterruptCallback( IRSensors* );
-static void TimerCallback( void );
+static void StartAdcReadCallback( void );
 
 /*****************************************************************************
 * Function: IRSensors - Constructor
@@ -71,7 +71,6 @@ IRSensors::IRSensors
     )
 {
     this_robot = current_robot;
-    calibrating = false;
 
     memset( calibration_offsets, 0, sizeof calibration_offsets );
 
@@ -100,19 +99,15 @@ IRSensors::IRSensors
     reading_dist = false;
     memset( this->raw_readings, 0, number_of_sensors * sizeof( *raw_readings ) );
     memset( this->ambiant_light, 0, number_of_sensors * sizeof( *ambiant_light ) );
-    memset( this->rolling_average, 0, number_of_sensors * sizeof( *rolling_average ) );
+    memset( this->adc_readings, 0, number_of_sensors * sizeof( *adc_readings ) );
+    memset( this->summed_readings, 0, number_of_sensors * sizeof( *summed_readings ) );
+
+    current_summed_count = 0;
+
+    // Temporarily hard code
+    number_of_samples_to_average = 50;
 
 } // IRSensors()
-
-/*****************************************************************************
-* Function: isCalibrating
-*
-* Description: Returns whether or not the sensors are calibrating
-*****************************************************************************/
-bool IRSensors::isCalibrating( void )
-{
-    return calibrating;
-}
 
 /*****************************************************************************
 * Function: CalibrateSensor
@@ -252,9 +247,9 @@ float IRSensors::ReadDistance( sensor_id_t id )
     if( id == sensor_id_front_ne
      || id == sensor_id_front_nw )
     {
-        return ( ConvertToDistance( rolling_average[ id ] ) / 2.0f ) + calibration_offsets[ id ];
+        return ( ConvertToDistance( adc_readings[ id ], id ) / 2.0f ) + calibration_offsets[ id ];
     }
-    return ConvertToDistance( rolling_average[ id ] ) + calibration_offsets[ id ];
+    return ConvertToDistance( adc_readings[ id ], id ) + calibration_offsets[ id ];
 
 } // ReadDistance
 
@@ -267,7 +262,7 @@ float IRSensors::ReadDistance( sensor_id_t id )
 *****************************************************************************/
 bool IRSensors::IsSaturated( sensor_id_t sensor_id )
 {
-    return rolling_average[ sensor_id ] >= 3200.0f;
+    return adc_readings[ sensor_id ] >= 3200.0f;
 
 } // IsSaturated
 
@@ -280,19 +275,10 @@ bool IRSensors::IsSaturated( sensor_id_t sensor_id )
 *****************************************************************************/
 void IRSensors::StartRead( void )
 {
-    // When data is acumulated reading_dist is toggled
-    if( reading_dist )
-    {
-        // Turn on the emitters
-        emiter_gpio->ODR |= emiter_pins;
-    }
+    // Turn on the emitters
+    emiter_gpio->ODR |= emiter_pins;
 
-    // Wait some time for emitters to come on
-    for( int i = 0; i < 10000; i++ )
-    {
-        asm( "nop" );
-    }
-
+    // Start ADC conversion.
     ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
 
 } // StartRead
@@ -306,25 +292,22 @@ void IRSensors::StartRead( void )
 *****************************************************************************/
 void IRSensors::AcumulateData( void )
 {
-    if( !calibrating )
+    ++current_summed_count;
+
+    for( uint32_t i = 0; i < number_of_sensors; i++ )
     {
-        for( int i = 0; i<number_of_sensors; i++ )
-        {
-            if( reading_dist )
-            {
-                rolling_average[i] = (raw_readings[i]-ambiant_light[i]) * ADC_APLHA + rolling_average[i] * ( 1 - ADC_APLHA );
-                emiter_gpio->ODR &= ~emiter_pins; // Turn off emitters
-            }
-            else
-            {
-                ambiant_light[i] = raw_readings[i];
-            }
-        }
-        reading_dist = !reading_dist;
+        summed_readings[i] += raw_readings[i];
     }
-    else
+
+    if (current_summed_count == number_of_samples_to_average)
     {
-        calibration_data_ready = true;
+        current_summed_count = 0;
+
+        for( uint32_t i = 0; i < number_of_sensors; i++ )
+        {
+            adc_readings[i] = summed_readings[i] /  number_of_samples_to_average;
+            summed_readings[i] = 0;
+        }
     }
 
 } // AcumulateData()
@@ -423,7 +406,7 @@ void IRSensors::InitADC( void )
     /* ADC regular channels configuration *************************************/
     for( uint8_t i = 0; i < number_of_sensors; i++ )
     {
-        ADC_RegularChannelConfig(ADCx, channels[i], i+1, ADC_SampleTime_480Cycles);
+        ADC_RegularChannelConfig(ADCx, channels[i], i+1, ADC_SampleTime_84Cycles);
     }
 
     ADC_EOCOnEachRegularChannelCmd(ADCx, DISABLE);
@@ -482,10 +465,10 @@ void IRSensors::InitInterrupts( void )
 * Description: Returns distance in centimeters corresponding to specified ADC value.
 *              No calibration offsets are added in.
 *****************************************************************************/
-inline float IRSensors::ConvertToDistance( float adc_value )
+inline float IRSensors::ConvertToDistance( float adc_value, sensor_id_t sensor_id )
 {
     // Avoid division by zero.
-    if( adc_value == 0.f )
+    if( adc_value <= 0.f )
     {
         return 100.f;
     }
@@ -500,7 +483,21 @@ inline float IRSensors::ConvertToDistance( float adc_value )
     switch( this_robot )
     {
         case BABY_KITTEN:
-            return (6.134f * log( imv ) + 52.287f);
+
+            switch( sensor_id )
+            {
+                case sensor_id_right:
+                    return 4266.4 * powf( mv, -0.825 );
+                    break;
+                case sensor_id_left:
+                    return 4847.4 * powf( mv, -1.235 );
+                    break;
+                case sensor_id_front:
+                    return 3974.4 * powf( mv, -0.842 );
+                    break;
+                default:
+                    return -1.0f; // Not mapped yet.
+            }
 
         case POWER_LION:
             return 361.93f * pow( mv, -0.6135f );
@@ -524,35 +521,25 @@ static void SetInterruptCallback( IRSensors* sensor )
 {
     if( ir_count >= MAX_CALLBACK_SENSORS ) { return; }
 
-    timer.InitChannel( oc_channel_1, 100, TimerCallback );
+    timer.InitChannel( oc_channel_1, 1000, StartAdcReadCallback );
     all_irs[ ir_count ] = sensor;
     ir_count++;
 
 } // SetInterruptCallback()
 
-
 /*****************************************************************************
-* Function: TimerCallback
+* Function: StartAdcReadCallback
 *
-* Description: Callback for the timer interupt, this starts reading distances
-*              for each instance of ir sensors
-*             NOTE: This will eventually be called internally through
-*                   timer_interrupt_oc but currently all channels are taken
-*                   up by motors class, need support for more TIM ohannels to work.
-*                   For now call this from a timer interupt
+* Description:
 *****************************************************************************/
-static void TimerCallback(void)
+static void StartAdcReadCallback(void)
 {
     for( int i = 0; i < ir_count; i++ )
     {
-        if( !all_irs[i]->isCalibrating() )
-        {
-            all_irs[i]->StartRead();
-        }
+        all_irs[i]->StartRead();
     }
 
-} // TimerCallback()
-
+} // StartAdcReadCallback()
 
 /*****************************************************************************
 * Function: ADC_IRQHandler

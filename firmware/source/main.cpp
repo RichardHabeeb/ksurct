@@ -58,17 +58,25 @@ int main(void)
 
     system_timer.Initialize(1e6);
 
-    //Wait 3 seconds to move hands
+    //test_sensors(micromouse->get_sensors());
+    //test_motors(micromouse->get_motors());
+    //test_leds();
+
+    // Wait 3 seconds to move hands
     double time = system_timer.get_time();
     while (system_timer.get_time() < time + 3.0);
 
-    //Calibrate sensors
+    // Since we're in the first cell we know we're centered in the cell and have walls
+    // on each side.  This means we can calibrate the side sensors to some known distance.
     indicator_1_led->WriteHigh();
     micromouse->CalibrateSensors();
+    //micromouse->TurnAround();
     indicator_1_led->WriteLow();
 
-    //Enter config menu
-    micromouse->ConfigureRobotMenu();
+    //test_sensors(micromouse->get_sensors());
+
+    // Enter config menu
+    //micromouse->ConfigureRobotMenu();
 
     while (true)
     {
@@ -86,8 +94,13 @@ int main(void)
 *****************************************************************************/
 void test_motors(PairedMotors & motors)
 {
-    // ZeroPointTurn test.
-    motors.ZeroPointTurn(turn_right, 90, 3);
+    while (true)
+    {
+        // ZeroPointTurn test.
+        motors.ZeroPointTurn(turn_right, 360, 5);
+        double time = system_timer.get_time();
+        while (system_timer.get_time() < time + 5.f);
+    }
 
     // ArcTurn test.
     //motors.Drive(10);
@@ -118,19 +131,18 @@ void test_motors(PairedMotors & motors)
 *****************************************************************************/
 void test_sensors(IDistanceSensors & sensors)
 {
-    sensors.CalibrateSensor( sensor_id_front, 8.0f );
-
-    double time;
-
     while (true)
     {
-        time = system_timer.get_time();
-        while (system_timer.get_time() < time + 2.f);
-        printf("\n\nl:  %f",sensors.ReadDistance(sensor_id_left));
-        printf("\nfl: %f",  sensors.ReadDistance(sensor_id_front_nw));
-        printf("\nf:  %f",  sensors.ReadDistance(sensor_id_front));
-        printf("\nfr: %f",  sensors.ReadDistance(sensor_id_front_ne));
-        printf("\nr:  %f",  sensors.ReadDistance(sensor_id_right));
+//        printf("\n\nl:  %f",sensors.ReadDistance(sensor_id_left));
+//        printf("\nfl: %f",  sensors.ReadDistance(sensor_id_front_nw));
+//        printf("\nf:  %f",  sensors.ReadDistance(sensor_id_front));
+//        printf("\nfr: %f",  sensors.ReadDistance(sensor_id_front_ne));
+//        printf("\nr:  %f",  sensors.ReadDistance(sensor_id_right));
+        volatile float f = sensors.ReadDistance(sensor_id_front);
+        volatile float r = sensors.ReadDistance(sensor_id_right);
+        volatile float l = sensors.ReadDistance(sensor_id_left);
+        double time = system_timer.get_time();
+        while (system_timer.get_time() < time + 1.f);
     }
 
 } // test_sensors()

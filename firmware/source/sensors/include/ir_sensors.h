@@ -79,9 +79,6 @@ public: // methods
             sensor_id_t sensor_id   // Sensor to check
         );
 
-    // Returns whether or not the sensors are calibrating
-    bool isCalibrating(void);
-
     // Initializes the DMA, this is set as public so that if a transoer error
     // occurs it can be reinitialized on the fly
     void InitDMA(void);
@@ -98,16 +95,17 @@ private: // methods
 
     // Returns distance in centimeters corresponding to specified ADC value.
     // No calibration offsets are added in.
-    inline float ConvertToDistance( float adc_value );
+    inline float ConvertToDistance( float adc_value, sensor_id_t sensor_id );
 
 private: // fields
 
     bool reading_dist;
-    bool calibrating;
-    bool calibration_data_ready;
     uint16_t ambiant_light[number_of_sensors];
     uint16_t raw_readings[number_of_sensors];
-    float rolling_average[number_of_sensors];
+    uint32_t summed_readings[number_of_sensors]; // Running total used for averaging.
+    uint32_t number_of_samples_to_average;
+    uint32_t current_summed_count; // Number of readings that have been summed.
+    float adc_readings[number_of_sensors];
     float calibration_offsets[number_of_sensors];
     uint32_t emiter_pins;
     GPIO_TypeDef* emiter_gpio;

@@ -37,7 +37,7 @@
 ---------------------------------------------------------------------------------------*/
 
 // Minimum amount of time to wait before running centering controls again.
-const float minimum_centering_period = .01; // seconds
+const float minimum_centering_period = .05; // seconds
 
 // Distance (in centimeters) before the target cell center that the maze evaulation action
 // (map walls/flood maze/setup target information, etc) needs to occur.
@@ -142,10 +142,6 @@ void Micromouse::ResetToStartingCell(void)
 *****************************************************************************/
 void Micromouse::SolveMaze(void)
 {
-    // Since we're in the first cell we know we're centered in the cell and have walls
-    // on each side.  This means we can calibrate the side sensors to some known distance.
-    //CalibrateSensors();
-
     // Map side walls since they should always be there by competition rules. Don't want
     // to just call UpdateWalls() since there's a good chance we're not starting in the
     // same position we're normally mapping walls at.  Could refactor UpdateWalls() to
@@ -158,11 +154,11 @@ void Micromouse::SolveMaze(void)
 
     while (true)
     {
-        if(CheckForCoveredSensors())
-        {
-            motors.Stop();
-            ConfigureRobotMenu();
-        }
+//        if(CheckForCoveredSensors())
+//        {
+//            motors.Stop();
+//            ConfigureRobotMenu();
+//        }
 
         // Determine distance to next checkpoint and what type of checkpoint it is.
         SetupNextCheckpoint();
@@ -224,14 +220,14 @@ void Micromouse::SetupNextCheckpoint(void)
     }
     // If the current cell has no walls and we just came from a call without walls
     // we should turn into a corridor to reorient ourselves
-    else if (!current_cell->HasWalls()
-          && previous_cell->get_visited()
-          && !previous_cell->HasWalls() )
-    {
-        current_checkpoint_type = turn_checkpoint;
-        SetupTargetCell(1, ConvertToHeading(right, current_heading));
-        distance_to_checkpoint = 0.f;
-    }
+//    else if (!current_cell->HasWalls()
+//          && previous_cell->get_visited()
+//          && !previous_cell->HasWalls() )
+//    {
+//        current_checkpoint_type = turn_checkpoint;
+//        SetupTargetCell(1, ConvertToHeading(right, current_heading));
+//        distance_to_checkpoint = 0.f;
+//    }
     else if (!target_cell.has_been_visited)
     {
         current_checkpoint_type = maze_evaluate_checkpoint;
@@ -379,6 +375,10 @@ void Micromouse::UpdateNetLocation
 *****************************************************************************/
 void Micromouse::UpdateWalls(void)
 {
+    //motors.Stop();
+    //double time = system_timer.get_time();
+    //while (system_timer.get_time() < time + 4.0);
+
     bool is_wall_on_right = ReadRightDistance() <= thresholds.side;
     bool is_wall_on_left  = ReadLeftDistance()  <= thresholds.side;
     bool is_wall_in_front = ReadFrontDistance() <= (thresholds.front + maze_evaluate_checkpoint_offset_distance);
@@ -405,6 +405,11 @@ void Micromouse::UpdateWalls(void)
     {
         current_cell->set_wall(ConvertToHeading(forward, current_heading));
     }
+
+    // Set directional LEDs for user feedback.
+    is_wall_on_right ? right_directional_led->WriteHigh() : right_directional_led->WriteLow();
+    is_wall_on_left  ? left_directional_led->WriteHigh()  : left_directional_led->WriteLow();
+    is_wall_in_front ? front_directional_led->WriteHigh() : front_directional_led->WriteLow();
 
 } // Micromouse::UpdateWalls()
 
@@ -481,7 +486,7 @@ void Micromouse::Center(void)
     {
         bool reliable_wall_readings = IsWallReadingReliable();
 
-        reliable_wall_readings ? indicator_1_led->WriteLow() : indicator_1_led->WriteHigh();
+        reliable_wall_readings ? indicator_2_led->WriteLow() : indicator_2_led->WriteHigh();
 
         if (!reliable_wall_readings)
         {
@@ -526,14 +531,14 @@ float Micromouse::MeasureDistanceToRightWall(void)
 
     float distance_to_wall = 0.f;
 
-    if (is_wall_on_right && is_wall_on_left)
-    {
-        if (right_side_distance < left_side_distance)
-        {
-            is_wall_on_right = false;
-        }
-    }
-
+    // Farther distances work better due to sensor angle variance.
+//    if (is_wall_on_right && is_wall_on_left)
+//    {
+//        if (right_side_distance < left_side_distance)
+//        {
+//            distance_to_wall = maze.get_cell_length() - left_side_distance;
+//        }
+//    }
     if (is_wall_on_right)
     {
         distance_to_wall = right_side_distance;
@@ -545,25 +550,7 @@ float Micromouse::MeasureDistanceToRightWall(void)
     else // No walls to use for balancing.
     {
         // Estimate distance to right wall using net location information.
-        cardinal_t right_side_heading = ConvertToHeading(right, current_heading);
-        float cell_length =  maze.get_cell_length();
-
-        // TODO: investigate that remainderf does what I expect.
-        switch (right_side_heading)
-        {
-            case north:
-                distance_to_wall = remainderf(net_y_distance, cell_length);
-                break;
-            case south:
-                distance_to_wall = cell_length - remainderf(net_y_distance, cell_length);
-                break;
-            case west:
-                distance_to_wall = remainderf(net_x_distance, cell_length);
-                break;
-            case east:
-                distance_to_wall = cell_length - remainderf(net_x_distance, cell_length);
-                break;
-        }
+        distance_to_wall = CalculateDistanceToNeighborCell(ConvertToHeading(right, current_heading));
     }
 
     return distance_to_wall;
@@ -706,6 +693,8 @@ void Micromouse::Turn
 *****************************************************************************/
 void Micromouse::CorrectHeading(void)
 {
+    return;
+
     // Check if there are walls around and that the sensors are not saturated
     // if the sensors are saturated then the heading correction will not be accurate
     bool is_wall_on_right = (ReadRightDistance() <= thresholds.side) && !sensors.IsSaturated(sensor_id_right);
@@ -838,10 +827,12 @@ position_t Micromouse::ForwardPosition
 *****************************************************************************/
 void Micromouse::CalibrateSensors(void)
 {
-    float desired_side_reading = maze.get_cell_length() / 2.f - sensor_offsets.side;
+    float desired_side_reading = starting_y_distance - sensor_offsets.side;
+    //float desired_front_reading = starting_x_distance - sensor_offsets.front;
 
     sensors.CalibrateSensor(sensor_id_right, desired_side_reading);
     sensors.CalibrateSensor(sensor_id_left,  desired_side_reading);
+    //sensors.CalibrateSensor(sensor_id_front, desired_front_reading);
 
 } // Micromouse::CalibrateSensors()
 
@@ -969,7 +960,7 @@ bool Micromouse::IsWallReadingReliable(void)
 
     float sensors_to_next_cell = distance_to_next_cell - side_sensor_to_motor_axel;
 
-    return AbsoluteValue(sensors_to_next_cell) >= 1.5f;
+    return AbsoluteValue(sensors_to_next_cell) >= 3.f;
 
 } // Micromouse::IsWallReadingReliable()
 
@@ -1067,6 +1058,5 @@ void Micromouse::ConfigureRobotMenu()
         }
 
     }
+
 } // Micromouse::ConfigureRobotMenu()
-
-

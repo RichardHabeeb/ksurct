@@ -118,6 +118,8 @@ public: // methods
             float distance_to_travel // In centimeters
         );
 
+    void TurnAround(void) { motors.ZeroPointTurn(turn_right, 180.f, 5.f); }
+
     // Wait for user input via sensors to begin SolveMaze
     // A speed selection menu / destroy maze /  reset position
     void ConfigureRobotMenu(void);

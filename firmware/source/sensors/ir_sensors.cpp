@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------------------
 *                                       INCLUDES
 *--------------------------------------------------------------------------------------*/
+#include "led_references.h"
 
 #include <cstring>
 #include <cmath>
@@ -42,7 +43,7 @@
 *                                      VARIABLES
 *--------------------------------------------------------------------------------------*/
 
-// Instantiate output compare timer to step the motors (still need to be initialized)
+// Instantiate output compare timer to read sensors (still need to be initialized)
 static TimerInterruptOC timer(TIM4, TIM4_IRQn, RCC_APB1Periph_TIM4, (SystemCoreClock/4), 50000);
 
 // References to all ir classes that have been instantiated for interupt callbacks
@@ -79,9 +80,9 @@ IRSensors::IRSensors
         case BABY_KITTEN: ADCx = ADC1;
                           emiter_gpio = GPIOA;
                           emiter_pins = GPIO_Pin_0
-                                      | GPIO_Pin_1
+                                      //| GPIO_Pin_1
                                       | GPIO_Pin_2
-                                      | GPIO_Pin_3
+                                      //| GPIO_Pin_3
                                       | GPIO_Pin_4;
                           break;
 
@@ -287,7 +288,7 @@ void IRSensors::StartRead( void )
     }
 
     // Wait some time for emitters to come on
-    for( int i = 0; i < 1000; i++ )
+    for( int i = 0; i < 10000; i++ )
     {
         asm( "nop" );
     }
@@ -325,6 +326,7 @@ void IRSensors::AcumulateData( void )
     {
         calibration_data_ready = true;
     }
+
 } // AcumulateData()
 
 /*****************************************************************************
@@ -522,7 +524,7 @@ static void SetInterruptCallback( IRSensors* sensor )
 {
     if( ir_count >= MAX_CALLBACK_SENSORS ) { return; }
 
-    timer.InitChannel( oc_channel_1, 200, TimerCallback );
+    timer.InitChannel( oc_channel_1, 100, TimerCallback );
     all_irs[ ir_count ] = sensor;
     ir_count++;
 

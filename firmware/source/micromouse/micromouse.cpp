@@ -647,29 +647,30 @@ void Micromouse::Turn
     bool is_wall_on_left  = (ReadLeftDistance()  <= thresholds.side);
     bool is_wall_in_front = ReadFrontDistance() <= (thresholds.front + maze_evaluate_checkpoint_offset_distance);
 
+
+    CorrectHeading();
+    if (is_wall_in_front)
+    {
+        float distance_from_front_wall = ReadFrontDistance();
+        motors.Drive(distance_from_front_wall > ( maze.get_cell_length() / 2.f - sensor_offsets.front ? travelling_speed : -1.f * travelling_speed));
+        while (fabs(distance_from_front_wall - (maze.get_cell_length() / 2.f - sensor_offsets.front)) > 0.1f)
+        {
+            distance_from_front_wall = ReadFrontDistance();
+        }
+        motors.Stop();
+    }
+
     // Correct the heading before the turn if we are turning away from the only
     // wall we can use
     switch (direction_to_turn)
     {
         case right:
-            if (!is_wall_in_front && is_wall_on_left)
-            {
-                CorrectHeading();
-            }
             motors.ZeroPointTurn(turn_right, 90.f, turning_speed);
             break;
         case left:
-            if (!is_wall_in_front && is_wall_on_right)
-            {
-                CorrectHeading();
-            }
             motors.ZeroPointTurn(turn_left, 90.f, turning_speed);
             break;
         case backward:
-            if (is_wall_in_front && !is_wall_on_left && !is_wall_on_right)
-            {
-                CorrectHeading();
-            }
             motors.ZeroPointTurn(turn_left, 180.f, turning_speed);
             break;
     }
@@ -678,11 +679,6 @@ void Micromouse::Turn
 
     // Turning is our reset case for heading used for odometry.
     forward_angle = 0.f;
-
-    // If we corrected the heading before the turn this function call
-    // will do nothing, ( There will be no walls to read anymore so it will
-    // just return.
-    CorrectHeading();
 
 } // Micromouse::Turn()
 
@@ -693,8 +689,6 @@ void Micromouse::Turn
 *****************************************************************************/
 void Micromouse::CorrectHeading(void)
 {
-    return;
-
     // Check if there are walls around and that the sensors are not saturated
     // if the sensors are saturated then the heading correction will not be accurate
     bool is_wall_on_right = (ReadRightDistance() <= thresholds.side) && !sensors.IsSaturated(sensor_id_right);
@@ -736,7 +730,7 @@ void Micromouse::CorrectHeading(void)
                     }
                     else // zeroing_turn_direction == turn_left
                     {
-                        //motors.ZeroPointTurn(turn_right, 3.f, turning_speed);
+                        motors.ZeroPointTurn(turn_right, 1.f, turning_speed);
                     }
                 }
                 else if (fabs(distance_to_wall[distance_read_count%3]-distance_to_wall[(distance_read_count-1)%3]) < 0.25f )
@@ -828,11 +822,14 @@ position_t Micromouse::ForwardPosition
 void Micromouse::CalibrateSensors(void)
 {
     float desired_side_reading = starting_y_distance - sensor_offsets.side;
-    //float desired_front_reading = starting_x_distance - sensor_offsets.front;
+    float desired_front_reading = starting_x_distance - sensor_offsets.front;
+
+    sensors.CalibrateSensor(sensor_id_front,  desired_front_reading);
+
+    motors.ZeroPointTurn(turn_left, 180.f, turning_speed);
 
     sensors.CalibrateSensor(sensor_id_right, desired_side_reading);
     sensors.CalibrateSensor(sensor_id_left,  desired_side_reading);
-    //sensors.CalibrateSensor(sensor_id_front, desired_front_reading);
 
 } // Micromouse::CalibrateSensors()
 

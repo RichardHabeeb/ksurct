@@ -14,6 +14,5 @@ http://ksurct.herokuapp.com/
 #### Feature / todo trello:
 https://trello.com/b/8oDpQsBu
 
-#### Hipchat:
-https://ksurct.hipchat.com/chat
-
+#### Public Hipchat:
+https://www.hipchat.com/gsJqYJHIo
